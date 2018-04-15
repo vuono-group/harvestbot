@@ -1,15 +1,12 @@
-import { create } from 'axios';
+import { Rxios } from 'rxios';
 
 export default (baseURL, headers = {}) => {
-  const api = create({
+  const api = new Rxios({
     baseURL,
     headers,
   });
 
-  const getJson = async (url) => {
-    const response = await api.get(url);
-    return response.data;
-  };
+  const getJson = url => api.get(url);
 
   return { getJson };
 };
