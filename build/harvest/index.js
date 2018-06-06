@@ -8,7 +8,7 @@ var _empty = require('rxjs/observable/empty');
 
 require('rxjs/add/operator/expand');
 
-require('rxjs/add/operator/filter');
+require('rxjs/add/operator/first');
 
 require('rxjs/add/operator/map');
 
@@ -34,7 +34,7 @@ exports.default = http => {
     date, hours, billable, projectId, projectName, taskId, taskName
   })).reduce((result, item) => [...result, item], []);
 
-  const getTimeEntries = userEmail => api.getJson('/users').mergeMap(({ users }) => users).filter(({ email }) => email === userEmail).mergeMap(({ id }) => getTimeEntriesForUserId(id)).toPromise();
+  const getTimeEntries = (userName, validateEmail = () => null) => api.getJson('/users').mergeMap(({ users }) => users).first(({ email }) => userName === validateEmail(email)).mergeMap(({ id }) => getTimeEntriesForUserId(id)).toPromise();
 
   return { getTimeEntries };
 };

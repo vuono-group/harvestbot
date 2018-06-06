@@ -1,5 +1,14 @@
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.calcFlextime = undefined;
+
+var _rcloadenv = require('@google-cloud/rcloadenv');
+
+var _rcloadenv2 = _interopRequireDefault(_rcloadenv);
+
 var _log = require('./log');
 
 var _log2 = _interopRequireDefault(_log);
@@ -24,59 +33,100 @@ var _slack = require('./slack');
 
 var _slack2 = _interopRequireDefault(_slack);
 
-var _gcloud = require('./gcloud');
-
-var _gcloud2 = _interopRequireDefault(_gcloud);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const analyzer = (0, _analyzer2.default)();
-const calendar = (0, _calendar2.default)();
-const slack = (0, _slack2.default)(_http2.default);
-const gCloud = (0, _gcloud2.default)();
-const tracker = (0, _harvest2.default)(_http2.default);
-const ignoreTaskIds = process.env.IGNORE_FROM_FLEX_TASK_IDS ? process.env.IGNORE_FROM_FLEX_TASK_IDS.split(',').map(id => parseInt(id, 10)) : [];
+const app = {};
 
-const doCalcFlexTime = (email, res) => {
-  _log2.default.info(`Ignore following task ids ${ignoreTaskIds}`);
-  tracker.getTimeEntries(email).then(entries => {
-    const latestFullDay = calendar.getLatestFullWorkingDay();
-    _log2.default.info(`Latest full working day: ${latestFullDay}`);
+const formatDate = date => date.toLocaleDateString('en-US', {
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+});
 
-    const range = analyzer.getPeriodRange(entries, latestFullDay);
-    _log2.default.info(`Received range starting from ${range.start} to ${range.end}`);
+const printResponse = msgs => Array.isArray(msgs) ? msgs.forEach(msg => _log2.default.info(msg)) : _log2.default.info(msgs);
 
-    const totalHours = calendar.getTotalWorkHoursSinceDate(range.start, range.end);
-    _log2.default.info(`Total working hours from range start ${totalHours}`);
+const initialize = responseUrl => {
+  app.analyzer = (0, _analyzer2.default)();
+  app.calendar = (0, _calendar2.default)();
+  app.slack = (0, _slack2.default)(_http2.default, responseUrl);
+  app.response = responseUrl ? app.slack.postResponse : printResponse;
+  app.tracker = (0, _harvest2.default)(_http2.default);
+  app.ignoreTaskIds = process.env.IGNORE_FROM_FLEX_TASK_IDS ? process.env.IGNORE_FROM_FLEX_TASK_IDS.split(',').map(id => parseInt(id, 10)) : [];
+  app.emailDomains = process.env.ALLOWED_EMAIL_DOMAINS ? process.env.ALLOWED_EMAIL_DOMAINS.split(',') : [];
+  app.validateEmail = (email, emailParts = email.split('@')) => app.emailDomains.includes(emailParts[1]) ? emailParts[0] : null;
+};
 
-    const result = analyzer.calculateWorkedHours(range.entries, ignoreTaskIds);
-    if (result.warnings.length > 0) {
-      _log2.default.info(result.warnings);
-    } else {
-      _log2.default.info('No warnings!');
+const doCalcFlexTime = email => {
+  const userName = app.validateEmail(email);
+  if (!userName) {
+    return app.response(`Invalid email domain for ${email}`);
+  }
+
+  console.log(`Ignore following task ids ${app.ignoreTaskIds}`);
+  console.log(`Fetch data for ${email}`);
+  app.response(`Fetching time entries for email ${email}`);
+  return app.tracker.getTimeEntries(userName, app.validateEmail).then(entries => {
+    if (!entries) {
+      return app.response(`Unable to find time entries for ${email}`);
     }
+    const messages = [];
+    const latestFullDay = app.calendar.getLatestFullWorkingDay();
+    messages.push(`Latest full working day: ${formatDate(latestFullDay)}`);
+    console.log(messages[0]);
 
-    _log2.default.info(`Your flex hours count: ${Math.floor(result.total - totalHours)}`);
-    res.send(200);
+    const range = app.analyzer.getPeriodRange(entries, latestFullDay);
+    console.log(`Received range starting from ${formatDate(range.start)} to ${formatDate(range.end)}`);
+
+    const totalHours = app.calendar.getTotalWorkHoursSinceDate(range.start, range.end);
+    console.log(`Total working hours from range start ${totalHours}`);
+
+    const result = app.analyzer.calculateWorkedHours(range.entries, app.ignoreTaskIds);
+    if (result.warnings.length > 0) {
+      console.log(result.warnings);
+    } else {
+      console.log('No warnings!');
+    }
+    result.warnings.forEach(msg => messages.push(msg));
+
+    messages.push(`Your flex hours count: ${Math.floor(result.total - totalHours)}`);
+    console.log(messages[messages.length - 1]);
+
+    console.log('All done!');
+    return app.response(messages);
   });
 };
 
 const validateEnv = req => {
-  if (!process.env.HARVEST_ACCESS_TOKEN || !process.env.HARVEST_APP_ID || !process.env.SLACK_BOT_TOKEN) {
-    _log2.default.error('Needed access tokens missing, exiting.');
+  if (!process.env.HARVEST_ACCESS_TOKEN || !process.env.HARVEST_ACCOUNT_ID || !process.env.SLACK_BOT_TOKEN) {
+    console.error('Needed access tokens missing.');
   }
   if (!req.body.user_id) {
-    _log2.default.error('User id missing, exiting.');
+    console.error('User id missing.');
   }
   return req.body.user_id;
 };
 
-// TODO: move to gCloud specific project
-exports.calcFlextime = (req, res) => {
-  _log2.default.info('calcFlextime triggered');
-  gCloud.applyConfig();
-  _log2.default.info('gCloud config applied');
-  const userId = validateEnv(req);
-  _log2.default.info(`Fetching data for user id ${userId}`);
-  slack.getUserEmailForId(userId).then(email => doCalcFlexTime(email, res)).catch(err => _log2.default.error(err));
+// TODO:
+// billable percentage for this month
+// use winston for logging
+// slack help
+
+/* eslint-disable import/prefer-default-export */
+const calcFlextime = exports.calcFlextime = (req, res) => {
+  res.json({ text: 'Starting to calculate flextime. This may take a while...' });
+  _rcloadenv2.default.getAndApply('harvestbot-config').then(() => {
+    console.log('gCloud config applied');
+    const userId = validateEnv(req);
+    if (userId) {
+      initialize(req.body.response_url);
+      console.log(`Fetching data for user id ${userId}`);
+      app.slack.getUserEmailForId(userId).then(email => doCalcFlexTime(email, req, res)).catch(err => console.error(err));
+    }
+  });
 };
+/* eslint-enable import/prefer-default-export */
+
+if (process.argv.length === 3) {
+  const email = process.argv[2];
+  _log2.default.info(`Email ${email}`);
+  initialize();
+  doCalcFlexTime(email);
+}

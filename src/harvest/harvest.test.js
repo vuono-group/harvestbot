@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import harvest from './index';
 
 describe('Harvest', () => {
-  const mockUsers = { users: [{ email: 'user', id: 1 }] };
+  const mockUsers = { users: [{ email: 'user@email.com', id: 1 }] };
   const mockEntries = {
     time_entries: [{
       spent_date: '2017-02-12',
@@ -21,7 +21,7 @@ describe('Harvest', () => {
   describe('getTimeEntries', () => {
     it('should get time entries', () => {
       expect.assertions(1);
-      getTimeEntries('user')
+      getTimeEntries('user', () => 'user')
         .then((res) => {
           const expected = mockEntries.time_entries[0];
           return expect(res).toEqual([{

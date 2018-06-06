@@ -4,14 +4,18 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
+var _rxjs = require('rxjs');
+
 require('rxjs/add/operator/mergeMap');
 
 // import logger from './log';
 
-exports.default = http => {
+exports.default = (http, responseUrl) => {
   const api = http('https://slack.com/api', {});
 
-  const getUserEmailForId = userId => api.getJson(`/users.info?user=${userId}&token=${process.env.SLACK_BOT_TOKEN}`).mergeMap(({ user: { profile: { email } } }) => email).toPromise();
+  const getUserEmailForId = userId => api.getJson(`/users.info?user=${userId}&token=${process.env.SLACK_BOT_TOKEN}`).mergeMap(({ user: { profile: { email } } }) => _rxjs.Observable.of(email)).toPromise();
 
-  return { getUserEmailForId };
+  const postResponse = (messageArray, message = Array.isArray(messageArray) ? messageArray.join('\n') : messageArray) => api.postJson(responseUrl, { text: message }).toPromise();
+
+  return { getUserEmailForId, postResponse };
 };

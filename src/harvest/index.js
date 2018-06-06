@@ -1,6 +1,6 @@
 import { empty } from 'rxjs/observable/empty';
 import 'rxjs/add/operator/expand';
-import 'rxjs/add/operator/filter';
+import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/reduce';
@@ -22,7 +22,9 @@ export default (http) => {
 
   const getTimeEntriesForUserId = userId =>
     getTimeEntriesForPage(userId, 1)
-      .expand(({ nextPage }) => (nextPage ? getTimeEntriesForPage(userId, nextPage) : empty()))
+      .expand(({ nextPage }) => (nextPage
+        ? getTimeEntriesForPage(userId, nextPage)
+        : empty()))
       .mergeMap(({ entries }) => entries)
       .map(({
         spent_date: date, hours, billable,
@@ -33,10 +35,10 @@ export default (http) => {
       }))
       .reduce((result, item) => [...result, item], []);
 
-  const getTimeEntries = userEmail =>
+  const getTimeEntries = (userName, validateEmail = () => null) =>
     api.getJson('/users')
       .mergeMap(({ users }) => users)
-      .filter(({ email }) => email === userEmail)
+      .first(({ email }) => userName === validateEmail(email))
       .mergeMap(({ id }) => getTimeEntriesForUserId(id))
       .toPromise();
 

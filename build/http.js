@@ -13,6 +13,7 @@ exports.default = (baseURL, headers = {}) => {
   });
 
   const getJson = url => api.get(url);
+  const postJson = (url, payload) => api.post(url, payload);
 
-  return { getJson };
+  return { getJson, postJson };
 };
