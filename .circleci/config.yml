@@ -29,8 +29,26 @@ jobs:
 
       - run: npm run ci:lock:upload
 
+  deploy:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - run:
+          name: Store Service Account
+          command: echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
+      - run: |
+          gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
+          gcloud --quiet config set project ${GCLOUD_PROJECT_ID}
+          gcloud functions deploy ${GCLOUD_FUNCTION_NAME} --source ${GCLOUD_REPOSITORY_URL}
+
 workflows:
-   version: 2
-   test:
+  version: 2
+  test_and_deploy:
     jobs:
       - test
+      - deploy:
+          requires:
+            - test
+          filters:
+            branches:
+              only: master
