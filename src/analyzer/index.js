@@ -43,13 +43,15 @@ export default () => {
     latestRecord: latestRecordDate,
   });
 
-  const calculateWorkedHours = (entries, ignoreTaskIds) => entries.reduce((result, entry) =>
-    ({
+  const calculateWorkedHours = (entries, ignoreTaskIds) => entries.reduce((result, entry) => {
+    const ignore = ignoreTaskIds.includes(entry.taskId);
+    return {
       ...result,
-      warnings: !calendar.isWorkingDay(new Date(entry.date))
+      warnings: !ignore && !calendar.isWorkingDay(new Date(entry.date))
         ? [...result.warnings, `Recorded hours in non-working day (${entry.date})!`] : result.warnings,
-      total: ignoreTaskIds.includes(entry.taskId) ? result.total : result.total + entry.hours,
-    }), {
+      total: ignore ? result.total : result.total + entry.hours,
+    };
+  }, {
     warnings: [],
     total: 0,
     billablePercentageCurrentMonth: getBillablePercentageCurrentMonth(entries),
