@@ -38,8 +38,8 @@ const doCalcFlexTime = (email) => {
     return app.response(`Invalid email domain for ${email}`);
   }
 
-  console.log(`Ignore following task ids ${app.ignoreTaskIds}`);
-  console.log(`Fetch data for ${email}`);
+  logger.info(`Ignore following task ids ${app.ignoreTaskIds}`);
+  logger.info(`Fetch data for ${email}`);
   app.response(`Fetching time entries for email ${email}`);
   return app.tracker.getTimeEntries(userName, app.validateEmail)
     .then((entries) => {
@@ -49,26 +49,26 @@ const doCalcFlexTime = (email) => {
       const messages = [];
       const latestFullDay = app.calendar.getLatestFullWorkingDay();
       messages.push(`Latest full working day: ${formatDate(latestFullDay)}`);
-      console.log(messages[0]);
+      logger.info(messages[0]);
 
       const range = app.analyzer.getPeriodRange(entries, latestFullDay);
-      console.log(`Received range starting from ${formatDate(range.start)} to ${formatDate(range.end)}`);
+      logger.info(`Received range starting from ${formatDate(range.start)} to ${formatDate(range.end)}`);
 
       const totalHours = app.calendar.getTotalWorkHoursSinceDate(range.start, range.end);
-      console.log(`Total working hours from range start ${totalHours}`);
+      logger.info(`Total working hours from range start ${totalHours}`);
 
       const result = app.analyzer.calculateWorkedHours(range.entries, app.ignoreTaskIds);
       if (result.warnings.length > 0) {
-        console.log(result.warnings);
+        logger.info(result.warnings);
       } else {
-        console.log('No warnings!');
+        logger.info('No warnings!');
       }
       result.warnings.forEach(msg => messages.push(msg));
 
       messages.push(`Your flex hours count: ${Math.floor(result.total - totalHours)}`);
-      console.log(messages[messages.length - 1]);
+      logger.info(messages[messages.length - 1]);
 
-      console.log('All done!');
+      logger.info('All done!');
       return app.response(messages);
     });
 };
@@ -77,10 +77,10 @@ const validateEnv = (req) => {
   if (!process.env.HARVEST_ACCESS_TOKEN ||
       !process.env.HARVEST_ACCOUNT_ID ||
       !process.env.SLACK_BOT_TOKEN) {
-    console.error('Needed access tokens missing.');
+    logger.error('Needed access tokens missing.');
   }
   if (!req.body.user_id) {
-    console.error('User id missing.');
+    logger.error('User id missing.');
   }
   return req.body.user_id;
 };
@@ -93,10 +93,10 @@ export const calcFlextime = (req, res) => {
     const userId = validateEnv(req);
     if (userId) {
       initialize(req.body.response_url);
-      console.log(`Fetching data for user id ${userId}`);
+      logger.info(`Fetching data for user id ${userId}`);
       app.slack.getUserEmailForId(userId)
         .then(email => doCalcFlexTime(email, req, res))
-        .catch(err => console.error(err));
+        .catch(err => logger.error(err));
     }
   });
 };
