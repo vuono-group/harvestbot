@@ -67,7 +67,7 @@ const doCalcFlexTime = (email) => {
       result.warnings.forEach(msg => messages.push(msg));
 
       messages.push(`Current month ${result.billablePercentageCurrentMonth}% billable`);
-      messages.push(`Your flex hours count: ${Math.floor(result.total - totalHours)}`);
+      messages.push(`*Your flex hours count: ${Math.floor(result.total - totalHours)}*`);
       logger.info(messages[messages.length - 1]);
 
       logger.info('All done!');
@@ -90,7 +90,7 @@ const validateEnv = (req) => {
 /* eslint-disable import/prefer-default-export */
 export const calcFlextime = (req, res) => {
   if (req.body.text === 'help') {
-    return res.json({ text: 'Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation.' });
+    return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
   }
   res.json({ text: 'Starting to calculate flextime. This may take a while...' });
   return rcloadenv.getAndApply('harvestbot-config').then(() => {
