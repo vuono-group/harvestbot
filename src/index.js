@@ -48,11 +48,12 @@ const doCalcFlexTime = (email) => {
       }
       const messages = [];
       const latestFullDay = app.calendar.getLatestFullWorkingDay();
-      messages.push(`Latest full working day: ${formatDate(latestFullDay)}`);
       logger.info(messages[0]);
 
       const range = app.analyzer.getPeriodRange(entries, latestFullDay);
       logger.info(`Received range starting from ${formatDate(range.start)} to ${formatDate(range.end)}`);
+      messages.push(`Latest calendar working day: ${formatDate(range.end)}\n
+        Last time you have recorded hours: ${formatDate(range.latestRecord)}`);
 
       const totalHours = app.calendar.getTotalWorkHoursSinceDate(range.start, range.end);
       logger.info(`Total working hours from range start ${totalHours}`);
@@ -65,6 +66,7 @@ const doCalcFlexTime = (email) => {
       }
       result.warnings.forEach(msg => messages.push(msg));
 
+      messages.push(`Current month ${result.billablePercentageCurrentMonth}% billable`);
       messages.push(`Your flex hours count: ${Math.floor(result.total - totalHours)}`);
       logger.info(messages[messages.length - 1]);
 
@@ -87,8 +89,11 @@ const validateEnv = (req) => {
 
 /* eslint-disable import/prefer-default-export */
 export const calcFlextime = (req, res) => {
+  if (req.body.text === 'help') {
+    return res.json({ text: 'Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation.' });
+  }
   res.json({ text: 'Starting to calculate flextime. This may take a while...' });
-  rcloadenv.getAndApply('harvestbot-config').then(() => {
+  return rcloadenv.getAndApply('harvestbot-config').then(() => {
     logger.info('gCloud config applied');
     const userId = validateEnv(req);
     if (userId) {

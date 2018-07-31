@@ -1,7 +1,9 @@
-import flex from './index';
+import calendar from './index';
 
-describe('Flex counter', () => {
-  const { getTotalWorkHoursSinceDate, getLatestFullWorkingDay } = flex();
+describe('Calendar', () => {
+  const {
+    CURRENT_YEAR, CURRENT_MONTH, getTotalWorkHoursSinceDate, getLatestFullWorkingDay,
+  } = calendar();
 
   describe('getTotalWorkHoursSinceDate', () => {
     it('calculate total work hours since date', () => {
@@ -15,6 +17,15 @@ describe('Flex counter', () => {
     });
     it('get last full working day (public holiday)', () => {
       expect(getLatestFullWorkingDay(new Date('2017-12-27'))).toEqual(new Date('2017-12-22'));
+    });
+  });
+
+  describe('currentDate', () => {
+    it('get current month', () => {
+      expect(CURRENT_MONTH).toEqual(new Date().getMonth());
+    });
+    it('get current year', () => {
+      expect(CURRENT_YEAR).toEqual(new Date().getFullYear());
     });
   });
 });

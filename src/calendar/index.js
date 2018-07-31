@@ -4,6 +4,10 @@ import publicHolidays from './public-holidays';
 export default () => {
   const HOURS_IN_DAY = 7.5;
 
+  const CURRENT_DATE = new Date();
+  const CURRENT_MONTH = CURRENT_DATE.getMonth();
+  const CURRENT_YEAR = CURRENT_DATE.getFullYear();
+
   const isWeekLeave = date => date.getDay() === 0 || date.getDay() === 6;
 
   const datesEqual = (a, b) =>
@@ -36,6 +40,8 @@ export default () => {
   };
 
   return {
+    CURRENT_MONTH,
+    CURRENT_YEAR,
     datesEqual,
     isWorkingDay,
     getLatestFullWorkingDay,

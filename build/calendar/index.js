@@ -15,6 +15,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 exports.default = () => {
   const HOURS_IN_DAY = 7.5;
 
+  const CURRENT_DATE = new Date();
+  const CURRENT_MONTH = CURRENT_DATE.getMonth();
+  const CURRENT_YEAR = CURRENT_DATE.getFullYear();
+
   const isWeekLeave = date => date.getDay() === 0 || date.getDay() === 6;
 
   const datesEqual = (a, b) => a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
@@ -42,6 +46,8 @@ exports.default = () => {
   };
 
   return {
+    CURRENT_MONTH,
+    CURRENT_YEAR,
     datesEqual,
     isWorkingDay,
     getLatestFullWorkingDay,
