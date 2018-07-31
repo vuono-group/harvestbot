@@ -42,10 +42,12 @@ jobs:
       - run: |
           git config --global user.email "circleci@harvestbot"
           git config --global user.name "CircleCI"
-          git add ./build
-          git commit -a -m "[skip ci] Update deployable build output." || true
-          git push origin master
-          curl -u ${CIRCLE_API_PROJECT_TOKEN}: -d build_parameters[CIRCLE_JOB]=deploy https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/$CIRCLE_BRANCH
+          git add ./build # Update build output
+          if git commit -a -m "[skip ci] Update deployable build output."; then
+            git push origin master
+            # Trigger deployment with updated build output
+            curl -u ${CIRCLE_API_PROJECT_TOKEN}: -d build_parameters[CIRCLE_JOB]=deploy https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/$CIRCLE_BRANCH
+          fi
 
   deploy:
     docker:
