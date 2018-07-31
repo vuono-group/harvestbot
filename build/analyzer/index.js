@@ -25,7 +25,7 @@ exports.default = () => {
   });
 
   const calculateWorkedHours = (entries, ignoreTaskIds) => entries.reduce((result, entry) => ({
-    warnings: !calendar.isWorkingDay(new Date(entry.date)) ? [...result.warnings, `Recorded hours in non-working day (${entry.date})!)`] : result.warnings,
+    warnings: !calendar.isWorkingDay(new Date(entry.date)) ? [...result.warnings, `Recorded hours in non-working day (${entry.date})!`] : result.warnings,
     total: ignoreTaskIds.includes(entry.taskId) ? result.total : result.total + entry.hours
   }), { warnings: [], total: 0 });
 

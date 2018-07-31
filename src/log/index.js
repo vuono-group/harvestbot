@@ -1,9 +1,13 @@
 import winston from 'winston';
+import { LoggingWinston } from '@google-cloud/logging-winston';
 
 const { Console } = winston.transports;
 
 const transports = {
-  default: [new Console({ json: false, timestamp: true, colorize: true })],
+  default: [
+    new Console({ json: false, timestamp: true, colorize: true }),
+    new LoggingWinston(),
+  ],
 };
 
 const exceptionHandlers = {

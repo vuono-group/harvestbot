@@ -89,7 +89,7 @@ const validateEnv = (req) => {
 export const calcFlextime = (req, res) => {
   res.json({ text: 'Starting to calculate flextime. This may take a while...' });
   rcloadenv.getAndApply('harvestbot-config').then(() => {
-    console.log('gCloud config applied');
+    logger.info('gCloud config applied');
     const userId = validateEnv(req);
     if (userId) {
       initialize(req.body.response_url);

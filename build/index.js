@@ -104,11 +104,6 @@ const validateEnv = req => {
   return req.body.user_id;
 };
 
-// TODO:
-// billable percentage for this month
-// use winston for logging
-// slack help
-
 /* eslint-disable import/prefer-default-export */
 const calcFlextime = exports.calcFlextime = (req, res) => {
   res.json({ text: 'Starting to calculate flextime. This may take a while...' });
