@@ -4,6 +4,7 @@ import logger from './log';
 import harvest from './harvest';
 import analyze from './analyzer';
 import cal from './calendar';
+import db from './db';
 import http from './http';
 import slackApi from './slack';
 
@@ -22,6 +23,7 @@ const printResponse =
 const initialize = (responseUrl) => {
   app.analyzer = analyze();
   app.calendar = cal();
+  app.db = db();
   app.slack = slackApi(http, responseUrl);
   app.response = responseUrl ? app.slack.postResponse : printResponse;
   app.tracker = harvest(http);
@@ -100,7 +102,10 @@ export const calcFlextime = (req, res) => {
       initialize(req.body.response_url);
       logger.info(`Fetching data for user id ${userId}`);
       app.slack.getUserEmailForId(userId)
-        .then(email => doCalcFlexTime(email, req, res))
+        .then((email) => {
+          app.db.storeUserData(userId, email);
+          doCalcFlexTime(email, req, res);
+        })
         .catch(err => logger.error(err));
     }
   });

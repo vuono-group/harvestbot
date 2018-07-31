@@ -58,7 +58,7 @@ jobs:
           command: echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
       - run: |
           gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-          gcloud --quiet config set project ${GCLOUD_PROJECT_ID}
+          gcloud --quiet config set project ${GCLOUD_PROJECT}
           gcloud functions deploy ${GCLOUD_FUNCTION_NAME} --source ${GCLOUD_REPOSITORY_URL}
 
 workflows:

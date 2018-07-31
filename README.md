@@ -17,7 +17,7 @@ docker pull google/cloud-sdk:206.0.0
 docker run -ti --name gcloud-config google/cloud-sdk gcloud auth login
 
 # Set project id
-docker run --rm -ti --volumes-from gcloud-config google/cloud-sdk gcloud config set project $GCLOUD_PROJECT_ID
+docker run --rm -ti --volumes-from gcloud-config google/cloud-sdk gcloud config set project $GCLOUD_PROJECT
 ```
 
 ### Setup cloud environment

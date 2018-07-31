@@ -25,6 +25,10 @@ var _calendar = require('./calendar');
 
 var _calendar2 = _interopRequireDefault(_calendar);
 
+var _db = require('./db');
+
+var _db2 = _interopRequireDefault(_db);
+
 var _http = require('./http');
 
 var _http2 = _interopRequireDefault(_http);
@@ -46,6 +50,7 @@ const printResponse = msgs => Array.isArray(msgs) ? msgs.forEach(msg => _log2.de
 const initialize = responseUrl => {
   app.analyzer = (0, _analyzer2.default)();
   app.calendar = (0, _calendar2.default)();
+  app.db = (0, _db2.default)();
   app.slack = (0, _slack2.default)(_http2.default, responseUrl);
   app.response = responseUrl ? app.slack.postResponse : printResponse;
   app.tracker = (0, _harvest2.default)(_http2.default);
@@ -128,5 +133,6 @@ if (process.argv.length === 3) {
   const email = process.argv[2];
   _log2.default.info(`Email ${email}`);
   initialize();
-  doCalcFlexTime(email);
+  app.db.storeUserData('22', '22');
+  //doCalcFlexTime(email);
 }
