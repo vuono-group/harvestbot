@@ -73,8 +73,8 @@ const doCalcFlexTime = email => {
 
     const range = app.analyzer.getPeriodRange(entries, latestFullDay);
     _log2.default.info(`Received range starting from ${formatDate(range.start)} to ${formatDate(range.end)}`);
-    messages.push(`Latest calendar working day: ${formatDate(range.end)}\n
-        Last time you have recorded hours: ${formatDate(range.latestRecord)}`);
+    messages.push(`Latest calendar working day: ${formatDate(range.end)}`);
+    messages.push(`Last time you have recorded hours: ${formatDate(range.latestRecord)}`);
 
     const totalHours = app.calendar.getTotalWorkHoursSinceDate(range.start, range.end);
     _log2.default.info(`Total working hours from range start ${totalHours}`);
