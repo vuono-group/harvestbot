@@ -87,8 +87,7 @@ const doCalcFlexTime = email => {
     }
     result.warnings.forEach(msg => messages.push(msg));
 
-    _log2.default.info(result);
-    messages.push(`Current month ${result.billablePercentageCurrentMonth} % billable`);
+    messages.push(`Current month ${result.billablePercentageCurrentMonth}% billable`);
     messages.push(`Your flex hours count: ${Math.floor(result.total - totalHours)}`);
     _log2.default.info(messages[messages.length - 1]);
 
