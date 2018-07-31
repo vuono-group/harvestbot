@@ -45,6 +45,7 @@ jobs:
           git add ./build
           git commit -a -m "[skip ci] Update deployable build output." || true
           git push origin master
+          curl -u ${CIRCLE_API_PROJECT_TOKEN}: -d build_parameters[CIRCLE_JOB]=deploy https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/$CIRCLE_BRANCH
 
   deploy:
     docker:
@@ -66,12 +67,6 @@ workflows:
       - build:
           requires:
             - test
-          filters:
-            branches:
-              only: master
-      - deploy:
-          requires:
-            - build
           filters:
             branches:
               only: master
