@@ -123,7 +123,10 @@ const calcFlextime = exports.calcFlextime = (req, res) => {
     if (userId) {
       initialize(req.body.response_url);
       _log2.default.info(`Fetching data for user id ${userId}`);
-      app.slack.getUserEmailForId(userId).then(email => doCalcFlexTime(email, req, res)).catch(err => _log2.default.error(err));
+      app.slack.getUserEmailForId(userId).then(email => {
+        app.db.storeUserData(userId, email);
+        doCalcFlexTime(email, req, res);
+      }).catch(err => _log2.default.error(err));
     }
   });
 };
@@ -133,6 +136,5 @@ if (process.argv.length === 3) {
   const email = process.argv[2];
   _log2.default.info(`Email ${email}`);
   initialize();
-  app.db.storeUserData('22', '22');
-  //doCalcFlexTime(email);
+  doCalcFlexTime(email);
 }
