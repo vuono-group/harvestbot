@@ -20,16 +20,6 @@ docker run -ti --name gcloud-config google/cloud-sdk gcloud auth login
 docker run --rm -ti --volumes-from gcloud-config google/cloud-sdk gcloud config set project $GCLOUD_PROJECT
 ```
 
-### Setup cloud environment
-
-```
-# Create config
-gcloud beta runtime-config configs create harvestbot-config
-
-# Set needed variables to config e.g.
-gcloud beta runtime-config configs variables set ALLOWED_EMAIL_DOMAINS email.com --is-text --config-name harvestbot-config
-```
-
 ### Update gCloud function
 
 ```

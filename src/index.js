@@ -1,5 +1,3 @@
-import rcloadenv from '@google-cloud/rcloadenv';
-
 import application from './app';
 import logger from './log';
 import db from './db';
@@ -25,25 +23,22 @@ export const calcFlextime = (req, res) => {
   if (req.body.text === 'help') {
     return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
   }
-  res.json({ text: 'Starting to calculate flextime. This may take a while...' });
 
-  return rcloadenv.getAndApply('harvestbot-config').then(() => {
-    logger.info('gCloud config applied');
-    const config = validateEnv();
-    const slack = slackApi(config, http, req.body.response_url);
-    const userId = req.body.user_id;
-    if (userId) {
-      logger.info(`Fetching data for user id ${userId}`);
-      slack.getUserEmailForId(userId)
-        .then((email) => {
-          db(config).storeUserData(userId, email);
-          application(config, http, slack.postResponse).calcFlexTime(email);
-        })
-        .catch(err => logger.error(err));
-    } else {
-      logger.error('User id missing.');
-    }
-  });
+  const config = validateEnv();
+  const slack = slackApi(config, http, req.body.response_url);
+  const userId = req.body.user_id;
+  if (userId) {
+    logger.info(`Fetching data for user id ${userId}`);
+    slack.getUserEmailForId(userId)
+      .then((email) => {
+        db(config).storeUserData(userId, email);
+        application(config, http, slack.postResponse).calcFlexTime(email);
+      })
+      .catch(err => logger.error(err));
+  } else {
+    logger.error('User id missing.');
+  }
+  return res.json({ text: 'Starting to calculate flextime. This may take a while...' });
 };
 /* eslint-enable import/prefer-default-export */
 
