@@ -9,8 +9,10 @@ import slackApi from './slack';
 const validateEnv = () => {
   const getEnvParam = param => (process.env[param] ? process.env[param] : logger.error(`Environment variable ${param} missing.`));
   const config = {};
-  config.ignoreTaskIds = getEnvParam('IGNORE_FROM_FLEX_TASK_IDS').split(',').map(id => parseInt(id, 10));
-  config.emailDomains = getEnvParam('ALLOWED_EMAIL_DOMAINS').split(',');
+  const ignoreTaskIds = getEnvParam('IGNORE_FROM_FLEX_TASK_IDS');
+  const emailDomains = getEnvParam('ALLOWED_EMAIL_DOMAINS');
+  config.ignoreTaskIds = ignoreTaskIds ? ignoreTaskIds.split(',').map(id => parseInt(id, 10)) : [];
+  config.emailDomains = emailDomains ? emailDomains.split(',') : [];
   config.projectId = getEnvParam('GCLOUD_PROJECT');
   config.harvestAccessToken = getEnvParam('HARVEST_ACCESS_TOKEN');
   config.harvestAccountId = getEnvParam('HARVEST_ACCOUNT_ID');

@@ -16,6 +16,7 @@ export default (config, http, response) => {
   const analyzer = analyze();
   const calendar = cal();
   const tracker = harvest(config, http);
+  const round = val => Math.floor(val * 2) / 2;
 
   const calcFlexTime = (email) => {
     const userName = validateEmail(email);
@@ -53,7 +54,7 @@ export default (config, http, response) => {
         result.warnings.forEach(msg => messages.push(msg));
 
         messages.push(`Current month ${result.billablePercentageCurrentMonth}% billable`);
-        messages.push(`*Your flex hours count: ${Math.floor(result.total - totalHours)}*`);
+        messages.push(`*Your flex hours count: ${round(result.total - totalHours)}*`);
         logger.info(messages[messages.length - 1]);
 
         logger.info('All done!');
