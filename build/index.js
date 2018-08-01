@@ -55,7 +55,7 @@ const calcFlextime = exports.calcFlextime = (req, res) => {
   return _rcloadenv2.default.getAndApply('harvestbot-config').then(() => {
     _log2.default.info('gCloud config applied');
     const config = validateEnv();
-    const slack = (0, _slack2.default)(_http2.default, req.body.response_url);
+    const slack = (0, _slack2.default)(config, _http2.default, req.body.response_url);
     const userId = req.body.user_id;
     if (userId) {
       _log2.default.info(`Fetching data for user id ${userId}`);
