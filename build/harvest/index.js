@@ -18,10 +18,10 @@ require('rxjs/add/operator/reduce');
 
 // import logger from './log';
 
-exports.default = http => {
+exports.default = (config, http) => {
   const api = http('https://api.harvestapp.com/v2/', {
-    Authorization: `Bearer ${process.env.HARVEST_ACCESS_TOKEN}`,
-    'Harvest-Account-Id': process.env.HARVEST_ACCOUNT_ID
+    Authorization: `Bearer ${config.harvestAccessToken}`,
+    'Harvest-Account-Id': config.harvestAccountId
   });
 
   const getTimeEntriesForPage = (userId, page) => api.getJson(`/time_entries?user_id=${userId}&page=${page}`).map(({ next_page: nextPage, time_entries: entries }) => ({ entries, nextPage }));

@@ -15,7 +15,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 const { Console } = _winston2.default.transports;
 
 const transports = {
-  default: [new Console({ json: false, timestamp: true, colorize: true }), new _loggingWinston.LoggingWinston()]
+  default: [new _loggingWinston.LoggingWinston(), new Console({ json: false, timestamp: true, colorize: true })]
 };
 
 const exceptionHandlers = {

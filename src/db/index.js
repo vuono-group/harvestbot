@@ -1,8 +1,8 @@
 import Datastore from '@google-cloud/datastore';
 
-export default () => {
+export default (config) => {
   const datastore = new Datastore({
-    projectId: process.env.GCLOUD_PROJECT,
+    projectId: config.projectId,
   });
 
   const storeUserData = (id, email) => {

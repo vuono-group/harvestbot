@@ -10,9 +10,9 @@ var _datastore2 = _interopRequireDefault(_datastore);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = () => {
+exports.default = config => {
   const datastore = new _datastore2.default({
-    projectId: process.env.GCLOUD_PROJECT
+    projectId: config.projectId
   });
 
   const storeUserData = (id, email) => {

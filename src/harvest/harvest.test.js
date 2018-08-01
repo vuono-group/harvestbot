@@ -13,10 +13,11 @@ describe('Harvest', () => {
     }],
     next_page: null,
   };
+  const mockConfig = {};
   const mockHttp = () => ({
     getJson: params => Observable.of((params.includes('/users') ? mockUsers : mockEntries)),
   });
-  const { getTimeEntries } = harvest(mockHttp);
+  const { getTimeEntries } = harvest(mockConfig, mockHttp);
 
   describe('getTimeEntries', () => {
     it('should get time entries', () => {

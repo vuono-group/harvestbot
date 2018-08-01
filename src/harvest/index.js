@@ -7,12 +7,12 @@ import 'rxjs/add/operator/reduce';
 
 // import logger from './log';
 
-export default (http) => {
+export default (config, http) => {
   const api = http(
     'https://api.harvestapp.com/v2/',
     {
-      Authorization: `Bearer ${process.env.HARVEST_ACCESS_TOKEN}`,
-      'Harvest-Account-Id': process.env.HARVEST_ACCOUNT_ID,
+      Authorization: `Bearer ${config.harvestAccessToken}`,
+      'Harvest-Account-Id': config.harvestAccountId,
     },
   );
 

@@ -5,8 +5,8 @@ const { Console } = winston.transports;
 
 const transports = {
   default: [
-    new Console({ json: false, timestamp: true, colorize: true }),
     new LoggingWinston(),
+    new Console({ json: false, timestamp: true, colorize: true }),
   ],
 };
 

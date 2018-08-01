@@ -3,14 +3,14 @@ import 'rxjs/add/operator/mergeMap';
 
 // import logger from './log';
 
-export default (http, responseUrl) => {
+export default (config, http, responseUrl) => {
   const api = http(
     'https://slack.com/api',
     {},
   );
 
   const getUserEmailForId = userId =>
-    api.getJson(`/users.info?user=${userId}&token=${process.env.SLACK_BOT_TOKEN}`)
+    api.getJson(`/users.info?user=${userId}&token=${config.slackBotToken}`)
       .mergeMap(({ user: { profile: { email } } }) => Observable.of(email))
       .toPromise();
 
