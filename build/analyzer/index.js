@@ -20,7 +20,7 @@ exports.default = () => {
 
   const getPeriodRangeEnd = (entriesDate, latestFullDate, today = new Date()) => calendar.datesEqual(entriesDate, today) ? entriesDate : latestFullDate;
 
-  const getBillablePercentage = (entries, totalHours = entries.reduce((result, entry) => entry.billable ? _extends({}, result, { billable: entry.hours + result.billable }) : _extends({}, result, { nonBillable: result.nonBillable + entry.hours }), { billable: 0, nonBillable: 0 })) => Math.floor(totalHours.billable / (totalHours.billable + totalHours.nonBillable) * 100);
+  const getBillablePercentage = (entries, totalHours = entries.reduce((result, entry) => entry.billable ? _extends({}, result, { billable: entry.hours + result.billable }) : _extends({}, result, { nonBillable: result.nonBillable + entry.hours }), { billable: 0, nonBillable: 0 }), allHours = totalHours.billable + totalHours.nonBillable) => allHours ? Math.floor(totalHours.billable / allHours * 100) : 0;
 
   const getBillablePercentageCurrentMonth = sortedEntries => getBillablePercentage(sortedEntries.filter(entry => {
     const entryDate = new Date(entry.date);
