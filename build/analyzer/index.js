@@ -27,11 +27,10 @@ exports.default = () => {
     return entryDate.getFullYear() === calendar.CURRENT_YEAR && entryDate.getMonth() === calendar.CURRENT_MONTH;
   }));
 
-  const getPeriodRange = (entries, latestFullDate, sortedEntries = entries.sort(sortByDate), latestRecordDate = new Date(sortedEntries[sortedEntries.length - 1].date), endDate = getPeriodRangeEnd(latestRecordDate, latestFullDate)) => ({
-    entries: sortedEntries.filter(entry => new Date(entry.date).getTime() <= endDate.getTime()),
-    start: new Date(sortedEntries[0].date),
-    end: endDate,
-    latestRecord: latestRecordDate
+  const getPeriodRange = (entries, latestFullDate, sortedEntries = entries.sort(sortByDate), latestRecordDate = new Date(sortedEntries[sortedEntries.length - 1].date), endDate = getPeriodRangeEnd(latestRecordDate, latestFullDate), sortedRangeEntries = sortedEntries.filter(entry => new Date(entry.date).getTime() <= endDate.getTime())) => ({
+    entries: sortedRangeEntries, // sorted entries for range
+    start: new Date(sortedEntries[0].date), // start date
+    end: endDate // today or last calendar working day
   });
 
   const calculateWorkedHours = (entries, ignoreTaskIds) => entries.reduce((result, entry) => {

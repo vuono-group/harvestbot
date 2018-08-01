@@ -40,11 +40,12 @@ export default () => {
       latestRecordDate,
       latestFullDate,
     ),
+    sortedRangeEntries = sortedEntries.filter(entry =>
+      new Date(entry.date).getTime() <= endDate.getTime()),
   ) => ({
-    entries: sortedEntries.filter(entry => new Date(entry.date).getTime() <= endDate.getTime()),
-    start: new Date(sortedEntries[0].date),
-    end: endDate,
-    latestRecord: latestRecordDate,
+    entries: sortedRangeEntries, // sorted entries for range
+    start: new Date(sortedEntries[0].date), // start date
+    end: endDate, // today or last calendar working day
   });
 
   const calculateWorkedHours = (entries, ignoreTaskIds) => entries.reduce((result, entry) => {

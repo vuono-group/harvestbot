@@ -14,7 +14,6 @@ describe('Analyzer', () => {
     it('should get start and end dates', () =>
       expect(getPeriodRange(mockEntries, new Date('2018-07-20')))
         .toEqual({
-          latestRecord: new Date('2018-07-20'),
           start: new Date('2017-06-07'),
           end: new Date('2018-07-20'),
           entries: [
