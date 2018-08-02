@@ -1,12 +1,18 @@
 import { Observable } from 'rxjs';
+import { empty } from 'rxjs/observable/empty';
+import 'rxjs/add/operator/expand';
+import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/mergeMap';
+import 'rxjs/add/operator/reduce';
 
 // import logger from './log';
 
 export default (config, http, responseUrl) => {
   const api = http(
     'https://slack.com/api',
-    {},
+    {
+      Authorization: `Bearer ${config.slackBotToken}`,
+    },
   );
 
   const getUserEmailForId = userId =>
@@ -17,5 +23,25 @@ export default (config, http, responseUrl) => {
   const postResponse = (messageArray, message = Array.isArray(messageArray) ? messageArray.join('\n') : messageArray) =>
     api.postJson(responseUrl, { text: message }).toPromise();
 
-  return { getUserEmailForId, postResponse };
+  const getImsForPage = cursor =>
+    api.getJson(`/im.list?token=${config.slackBotToken}&limit=100${cursor && `&cursor=${cursor}`}`)
+      .map(({ response_metadata: { next_cursor: nextCursor }, ims }) => ({ nextCursor, ims }));
+
+  const getImIds = userIds =>
+    getImsForPage()
+      .expand(({ nextCursor }) => (nextCursor ? getImsForPage(nextCursor) : empty()))
+      .mergeMap(({ ims }) => ims)
+      .map(({ user: userId, id: imId, is_user_deleted: deleted }) => ({ userId, imId, deleted }))
+      .filter(({ userId, deleted }) => userIds.includes(userId) && !deleted)
+      .reduce((result, item) => [...result, item], [])
+      .toPromise();
+
+  const postMessage = (imId, message) =>
+    api.postJson('/chat.postMessage', {
+      channel: imId, text: message, as_user: false,
+    }).toPromise();
+
+  return {
+    getUserEmailForId, postResponse, getImIds, postMessage,
+  };
 };
