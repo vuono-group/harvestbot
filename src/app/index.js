@@ -54,11 +54,12 @@ export default (config, http, response) => {
         result.warnings.forEach(msg => messages.push(msg));
 
         messages.push(`Current month ${result.billablePercentageCurrentMonth}% billable`);
-        messages.push(`*Your flex hours count: ${round(result.total - totalHours)}*`);
-        logger.info(messages[messages.length - 1]);
+
+        const header = `*Your flex hours count: ${round(result.total - totalHours)}*`;
+        logger.info(header);
 
         logger.info('All done!');
-        return response(messages);
+        return response(header, messages);
       });
   };
 
