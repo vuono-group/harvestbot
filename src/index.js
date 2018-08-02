@@ -18,7 +18,6 @@ const validateEnv = () => {
   return config;
 };
 
-/* eslint-disable import/prefer-default-export */
 export const calcFlextime = (req, res) => {
   if (req.body.text === 'help') {
     return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
@@ -40,7 +39,15 @@ export const calcFlextime = (req, res) => {
   }
   return res.json({ text: 'Starting to calculate flextime. This may take a while...' });
 };
-/* eslint-enable import/prefer-default-export */
+
+export const notifyUsers = () => {
+  const config = validateEnv();
+  const store = db(config);
+  store.fetchUserIds.then((userIds) => {
+    const slack = slackApi(config, http);
+    return slack.getImIds(userIds).then(imData => imData.forEach(imItem => logger.info(imItem)));
+  }).catch(() => logger.error('Unable to fetch user ids.'));
+};
 
 if (process.argv.length === 3) {
   const printResponse =
