@@ -25,7 +25,7 @@ exports.default = (config, http, responseUrl) => {
 
   const getUserEmailForId = userId => api.getJson(`/users.info?user=${userId}&token=${config.slackBotToken}`).mergeMap(({ user: { profile: { email } } }) => _rxjs.Observable.of(email)).toPromise();
 
-  const postResponse = (messageArray, message = Array.isArray(messageArray) ? messageArray.join('\n') : messageArray) => api.postJson(responseUrl, { text: message }).toPromise();
+  const postResponse = (header, messageArray) => api.postJson(responseUrl, { text: header, attachments: messageArray ? [{ text: messageArray.join('\n') }] : [] }).toPromise();
 
   const getImsForPage = cursor => api.getJson(`/im.list?token=${config.slackBotToken}&limit=100${cursor && `&cursor=${cursor}`}`).map(({ response_metadata: { next_cursor: nextCursor }, ims }) => ({ nextCursor, ims }));
 

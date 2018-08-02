@@ -71,7 +71,12 @@ const notifyUsers = exports.notifyUsers = () => {
 };
 
 if (process.argv.length === 3) {
-  const printResponse = msgs => Array.isArray(msgs) ? msgs.forEach(msg => _log2.default.info(msg)) : _log2.default.info(msgs);
+  const printResponse = (header, msgs) => {
+    _log2.default.info(header);
+    if (msgs) {
+      msgs.forEach(msg => _log2.default.info(msg));
+    }
+  };
 
   const email = process.argv[2];
   _log2.default.info(`Email ${email}`);
