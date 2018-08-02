@@ -31,7 +31,7 @@ export const calcFlextime = (req, res) => {
     slack.getUserEmailForId(userId)
       .then((email) => {
         db(config).storeUserData(userId, email);
-        application(config, http, slack.postResponse).calcFlexTime(email);
+        application(config, http).sendFlexTime(email, slack.postResponse);
       })
       .catch(err => logger.error(err));
   } else {
@@ -43,9 +43,17 @@ export const calcFlextime = (req, res) => {
 export const notifyUsers = (req, res) => {
   const config = validateEnv();
   const store = db(config);
-  store.fetchUserIds.then((userIds) => {
+  store.fetchUsers.then((users) => {
+    logger.info(`Found ${users.length} users`);
     const slack = slackApi(config, http);
-    slack.getImIds(userIds).then(imData => imData.forEach(imItem => logger.info(imItem)));
+    const app = application(config, http);
+    slack.getImIds(users.map(({ id }) => id)).then(imData =>
+      imData
+        .forEach((imItem) => {
+          const user = users.find(({ id }) => imItem.userId === id);
+          logger.info(`Notify ${user.email}`);
+          app.calcFlexTime(user.email).then(data => slack.postMessage(imItem.imId, data));
+        }));
   }).catch(() => logger.error('Unable to fetch user ids.'));
   return res.json({ text: 'ok' });
 };
@@ -61,5 +69,7 @@ if (process.argv.length === 3) {
 
   const email = process.argv[2];
   logger.info(`Email ${email}`);
-  application(validateEnv(), http, printResponse).calcFlexTime(email);
+  const app = application(validateEnv(), http);
+  app.sendFlexTime(email, printResponse);
+  notifyUsers(null, { json: data => logger.info(data) });
 }
