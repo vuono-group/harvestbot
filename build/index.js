@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.calcFlextime = undefined;
+exports.notifyUsers = exports.calcFlextime = undefined;
 
 var _app = require('./app');
 
@@ -41,7 +41,6 @@ const validateEnv = () => {
   return config;
 };
 
-/* eslint-disable import/prefer-default-export */
 const calcFlextime = exports.calcFlextime = (req, res) => {
   if (req.body.text === 'help') {
     return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
@@ -61,7 +60,15 @@ const calcFlextime = exports.calcFlextime = (req, res) => {
   }
   return res.json({ text: 'Starting to calculate flextime. This may take a while...' });
 };
-/* eslint-enable import/prefer-default-export */
+
+const notifyUsers = exports.notifyUsers = () => {
+  const config = validateEnv();
+  const store = (0, _db2.default)(config);
+  store.fetchUserIds.then(userIds => {
+    const slack = (0, _slack2.default)(config, _http2.default);
+    return slack.getImIds(userIds).then(imData => imData.forEach(imItem => _log2.default.info(imItem)));
+  }).catch(() => _log2.default.error('Unable to fetch user ids.'));
+};
 
 if (process.argv.length === 3) {
   const printResponse = msgs => Array.isArray(msgs) ? msgs.forEach(msg => _log2.default.info(msg)) : _log2.default.info(msgs);
