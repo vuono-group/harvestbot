@@ -40,13 +40,14 @@ export const calcFlextime = (req, res) => {
   return res.json({ text: 'Starting to calculate flextime. This may take a while...' });
 };
 
-export const notifyUsers = () => {
+export const notifyUsers = (req, res) => {
   const config = validateEnv();
   const store = db(config);
   store.fetchUserIds.then((userIds) => {
     const slack = slackApi(config, http);
-    return slack.getImIds(userIds).then(imData => imData.forEach(imItem => logger.info(imItem)));
+    slack.getImIds(userIds).then(imData => imData.forEach(imItem => logger.info(imItem)));
   }).catch(() => logger.error('Unable to fetch user ids.'));
+  return res.json({ text: 'ok' });
 };
 
 if (process.argv.length === 3) {

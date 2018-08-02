@@ -59,7 +59,14 @@ jobs:
       - run: |
           gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
           gcloud --quiet config set project ${GCLOUD_PROJECT}
-          gcloud functions deploy ${GCLOUD_FUNCTION_NAME} --source ${GCLOUD_REPOSITORY_URL}
+          gcloud functions deploy ${GCLOUD_FLEXTIME_FUNCTION_NAME} --source ${GCLOUD_REPOSITORY_URL}
+          gcloud functions deploy ${GCLOUD_NOTIFY_FUNCTION_NAME} --source ${GCLOUD_REPOSITORY_URL}
+
+  notify:
+    docker:
+      - image: circleci/node:9.9.0
+    steps:
+      - run: curl ${GCLOUD_NOTIFY_FUNCTION_URL}
 
 workflows:
   version: 2
@@ -72,3 +79,13 @@ workflows:
           filters:
             branches:
               only: master
+  notify:
+    triggers:
+      - schedule:
+          cron: "* * * * 1-5"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - notify
