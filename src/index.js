@@ -2,6 +2,7 @@ import application from './app';
 import logger from './log';
 import db from './db';
 import http from './http';
+import queue from './queue';
 import slackApi from './slack';
 
 const validateEnv = () => {
@@ -15,46 +16,56 @@ const validateEnv = () => {
   config.harvestAccessToken = getEnvParam('HARVEST_ACCESS_TOKEN');
   config.harvestAccountId = getEnvParam('HARVEST_ACCOUNT_ID');
   config.slackBotToken = getEnvParam('SLACK_BOT_TOKEN');
+  config.notifyChannelId = getEnvParam('SLACK_NOTIFY_CHANNEL_ID');
   return config;
 };
 
-export const calcFlextime = (req, res) => {
-  if (req.body.text === 'help') {
-    return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
+export const initFlextime = async (req, res) => {
+  if (req.body) {
+    if (req.body.text === 'help') {
+      return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
+    }
+    const text = req.body.response_url ? 'Starting to calculate flextime. This may take a while...' : 'ok';
+    const config = validateEnv();
+    await queue(config).enqueue({ userId: req.body.user_id, responseUrl: req.body.response_url });
+    return res.json({ text });
   }
-
-  const config = validateEnv();
-  const slack = slackApi(config, http, req.body.response_url);
-  const userId = req.body.user_id;
-  if (userId) {
-    logger.info(`Fetching data for user id ${userId}`);
-    slack.getUserEmailForId(userId)
-      .then((email) => {
-        db(config).storeUserData(userId, email);
-        application(config, http).sendFlexTime(email, slack.postResponse);
-      })
-      .catch(err => logger.error(err));
-  } else {
-    logger.error('User id missing.');
-  }
-  return res.json({ text: 'Starting to calculate flextime. This may take a while...' });
+  return res.json({ text: 'Payload missing' });
 };
 
-export const notifyUsers = (req, res) => {
+export const calcFlextime = async (message) => {
+  logger.info(message);
+  const config = validateEnv();
+  const request = JSON.parse(Buffer.from(message.data, 'base64').toString());
+  const slack = slackApi(config, http, request.responseUrl);
+  const { userId } = request;
+
+  if (userId) {
+    logger.info(`Fetching data for user id ${userId}`);
+    const email = request.email || await slack.getUserEmailForId(userId);
+    if (!email) {
+      return slack.postMessage(userId, 'Cannot find email for Slack user id');
+    }
+    db(config).storeUserData(userId, email);
+    await slack.postMessage(userId, `Fetching time entries for email ${email}`);
+    const data = await application(config, http).calcFlextime(email);
+    return slack.postMessage(userId, data.header, data.messages);
+  }
+  return slack.postMessage(userId, 'Cannot find Slack user id');
+};
+
+export const notifyUsers = async (req, res) => {
   const config = validateEnv();
   const store = db(config);
-  store.fetchUsers.then((users) => {
-    logger.info(`Found ${users.length} users`);
-    const slack = slackApi(config, http);
-    const app = application(config, http);
-    slack.getImIds(users.map(({ id }) => id)).then(imData =>
-      imData
-        .forEach((imItem) => {
-          const user = users.find(({ id }) => imItem.userId === id);
-          logger.info(`Notify ${user.email}`);
-          app.calcFlexTime(user.email).then(data => slack.postMessage(imItem.imId, data));
-        }));
-  }).catch(() => logger.error('Unable to fetch user ids.'));
+  const msgQueue = queue(config);
+
+  const users = await store.fetchUsers;
+  logger.info(`Found ${users.length} users`);
+
+  await Promise.all(users.map(async ({ email, id }) => {
+    logger.info(`Notify ${email}`);
+    return msgQueue.enqueue({ userId: id, email });
+  }));
   return res.json({ text: 'ok' });
 };
 
@@ -67,9 +78,11 @@ if (process.argv.length === 3) {
       }
     };
 
-  const email = process.argv[2];
-  logger.info(`Email ${email}`);
-  const app = application(validateEnv(), http);
-  app.sendFlexTime(email, printResponse);
-  notifyUsers(null, { json: data => logger.info(data) });
+  (async () => {
+    const email = process.argv[2];
+    logger.info(`Email ${email}`);
+    const app = application(validateEnv(), http);
+    const data = await app.calcFlextime(email);
+    printResponse(data.header, data.messages);
+  })();
 }

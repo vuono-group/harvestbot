@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.notifyUsers = exports.calcFlextime = undefined;
+exports.notifyUsers = exports.calcFlextime = exports.initFlextime = undefined;
 
 var _app = require('./app');
 
@@ -20,6 +20,10 @@ var _db2 = _interopRequireDefault(_db);
 var _http = require('./http');
 
 var _http2 = _interopRequireDefault(_http);
+
+var _queue = require('./queue');
+
+var _queue2 = _interopRequireDefault(_queue);
 
 var _slack = require('./slack');
 
@@ -38,42 +42,56 @@ const validateEnv = () => {
   config.harvestAccessToken = getEnvParam('HARVEST_ACCESS_TOKEN');
   config.harvestAccountId = getEnvParam('HARVEST_ACCOUNT_ID');
   config.slackBotToken = getEnvParam('SLACK_BOT_TOKEN');
+  config.notifyChannelId = getEnvParam('SLACK_NOTIFY_CHANNEL_ID');
   return config;
 };
 
-const calcFlextime = exports.calcFlextime = (req, res) => {
-  if (req.body.text === 'help') {
-    return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
+const initFlextime = exports.initFlextime = async (req, res) => {
+  if (req.body) {
+    if (req.body.text === 'help') {
+      return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
+    }
+    const text = req.body.response_url ? 'Starting to calculate flextime. This may take a while...' : 'ok';
+    const config = validateEnv();
+    await (0, _queue2.default)(config).enqueue({ userId: req.body.user_id, responseUrl: req.body.responseUrl });
+    return res.json({ text });
   }
-
-  const config = validateEnv();
-  const slack = (0, _slack2.default)(config, _http2.default, req.body.response_url);
-  const userId = req.body.user_id;
-  if (userId) {
-    _log2.default.info(`Fetching data for user id ${userId}`);
-    slack.getUserEmailForId(userId).then(email => {
-      (0, _db2.default)(config).storeUserData(userId, email);
-      (0, _app2.default)(config, _http2.default).sendFlexTime(email, slack.postResponse);
-    }).catch(err => _log2.default.error(err));
-  } else {
-    _log2.default.error('User id missing.');
-  }
-  return res.json({ text: 'Starting to calculate flextime. This may take a while...' });
+  return res.json({ text: 'Payload missing' });
 };
 
-const notifyUsers = exports.notifyUsers = (req, res) => {
+const calcFlextime = exports.calcFlextime = async message => {
+  _log2.default.info(message);
+  const config = validateEnv();
+  const request = JSON.parse(Buffer.from(message.data, 'base64').toString());
+  const slack = (0, _slack2.default)(config, _http2.default, request.responseUrl);
+  const { userId } = request;
+
+  if (userId) {
+    _log2.default.info(`Fetching data for user id ${userId}`);
+    const email = await slack.getUserEmailForId(userId);
+    if (!email) {
+      return slack.postResponse({ text: 'Cannot find email for Slack user id' });
+    }
+    (0, _db2.default)(config).storeUserData(userId, email);
+    return (0, _app2.default)(config, _http2.default).sendFlexTime(email, slack.postResponse);
+  }
+  return slack.postResponse({ text: 'Cannot find email for Slack user id' });
+};
+
+const notifyUsers = exports.notifyUsers = async (req, res) => {
   const config = validateEnv();
   const store = (0, _db2.default)(config);
-  store.fetchUsers.then(users => {
-    _log2.default.info(`Found ${users.length} users`);
-    const slack = (0, _slack2.default)(config, _http2.default);
-    const app = (0, _app2.default)(config, _http2.default);
-    slack.getImIds(users.map(({ id }) => id)).then(imData => imData.forEach(imItem => {
-      const user = users.find(({ id }) => imItem.userId === id);
-      _log2.default.info(`Notify ${user.email}`);
-      app.calcFlexTime(user.email).then(data => slack.postMessage(imItem.imId, data));
-    }));
-  }).catch(() => _log2.default.error('Unable to fetch user ids.'));
+  const slack = (0, _slack2.default)(config, _http2.default);
+  const app = (0, _app2.default)(config, _http2.default);
+
+  const users = await store.fetchUsers;
+  _log2.default.info(`Found ${users.length} users`);
+
+  await Promise.all(users.map(async ({ email, id }) => {
+    _log2.default.info(`Notify ${email}`);
+    const data = await app.calcFlexTime(email);
+    return slack.postMessage(config.notifyChannelId, id, data);
+  }));
   return res.json({ text: 'ok' });
 };
 
@@ -89,5 +107,6 @@ if (process.argv.length === 3) {
   _log2.default.info(`Email ${email}`);
   const app = (0, _app2.default)(validateEnv(), _http2.default);
   app.sendFlexTime(email, printResponse);
-  notifyUsers(null, { json: data => _log2.default.info(data) });
+  // initFlextime({ }, { json: data => logger.info(data) });
+  // notifyUsers(null, { json: data => logger.info(data) });
 }

@@ -33,48 +33,42 @@ exports.default = (config, http) => {
   const tracker = (0, _harvest2.default)(config, http);
   const round = val => Math.floor(val * 2) / 2;
 
-  const calcFlexTime = email => new Promise(resolve => {
+  const calcFlexTime = async email => {
     const userName = validateEmail(email);
     if (!userName) {
-      return resolve({ header: `Invalid email domain for ${email}` });
+      return { header: `Invalid email domain for ${email}` };
     }
 
     _log2.default.info(`Ignore following task ids ${config.ignoreTaskIds}`);
     _log2.default.info(`Fetch data for ${email}`);
 
-    return tracker.getTimeEntries(userName, validateEmail).then(entries => {
-      if (!entries) {
-        return resolve({ header: `Unable to find time entries for ${email}` });
-      }
-      const messages = [];
-      const latestFullDay = calendar.getLatestFullWorkingDay();
-      _log2.default.info(messages[0]);
+    const entries = await tracker.getTimeEntries(userName, validateEmail);
+    if (!entries) {
+      return { header: `Unable to find time entries for ${email}` };
+    }
+    const latestFullDay = calendar.getLatestFullWorkingDay();
 
-      const range = analyzer.getPeriodRange(entries, latestFullDay);
-      _log2.default.info(`Received range starting from ${formatDate(range.start)} to ${formatDate(range.end)}`);
-      messages.push(`Latest calendar working day: ${formatDate(range.end)}`);
-      messages.push(`Last time you have recorded hours: ${formatDate(new Date(range.entries[range.entries.length - 1].date))}`);
+    const range = analyzer.getPeriodRange(entries, latestFullDay);
+    _log2.default.info(`Received range starting from ${formatDate(range.start)} to ${formatDate(range.end)}`);
 
-      const totalHours = calendar.getTotalWorkHoursSinceDate(range.start, range.end);
-      _log2.default.info(`Total working hours from range start ${totalHours}`);
+    const totalHours = calendar.getTotalWorkHoursSinceDate(range.start, range.end);
+    _log2.default.info(`Total working hours from range start ${totalHours}`);
 
-      const result = analyzer.calculateWorkedHours(range.entries, config.ignoreTaskIds);
-      if (result.warnings.length > 0) {
-        _log2.default.info(result.warnings);
-      } else {
-        _log2.default.info('No warnings!');
-      }
-      result.warnings.forEach(msg => messages.push(msg));
+    const result = analyzer.calculateWorkedHours(range.entries, config.ignoreTaskIds);
+    if (result.warnings.length > 0) {
+      _log2.default.info(result.warnings);
+    } else {
+      _log2.default.info('No warnings!');
+    }
 
-      messages.push(`Current month ${result.billablePercentageCurrentMonth}% billable`);
+    const header = `*Your flex hours count: ${round(result.total - totalHours)}*`;
+    const messages = [`Latest calendar working day: ${formatDate(range.end)}`, `Last time you have recorded hours: ${formatDate(new Date(range.entries[range.entries.length - 1].date))}`, ...result.warnings, `Current month ${result.billablePercentageCurrentMonth}% billable`];
 
-      const header = `*Your flex hours count: ${round(result.total - totalHours)}*`;
-      _log2.default.info(header);
+    _log2.default.info(header);
+    _log2.default.info('All done!');
 
-      _log2.default.info('All done!');
-      return resolve({ header, messages });
-    });
-  });
+    return { header, messages };
+  };
 
   const sendFlexTime = (email, response) => {
     response(`Fetching time entries for email ${email}`);
