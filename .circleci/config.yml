@@ -59,8 +59,8 @@ jobs:
       - run: |
           gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
           gcloud --quiet config set project ${GCLOUD_PROJECT}
-          gcloud functions deploy ${GCLOUD_FLEXTIME_FUNCTION_NAME} --source ${GCLOUD_REPOSITORY_URL}
-          gcloud functions deploy ${GCLOUD_NOTIFY_FUNCTION_NAME} --source ${GCLOUD_REPOSITORY_URL}
+          gcloud functions deploy ${GCLOUD_FLEXTIME_FUNCTION_NAME} --source ${GCLOUD_REPOSITORY_URL} --region ${GCLOUD_FLEXTIME_FUNCTION_REGION}
+          gcloud functions deploy ${GCLOUD_NOTIFY_FUNCTION_NAME} --source ${GCLOUD_REPOSITORY_URL} --region ${GCLOUD_NOTIFY_FUNCTION_REGION}
 
   notify:
     docker:
