@@ -68,7 +68,7 @@ const notifyUsers = exports.notifyUsers = (req, res) => {
     _log2.default.info(`Found ${users.length} users`);
     const slack = (0, _slack2.default)(config, _http2.default);
     const app = (0, _app2.default)(config, _http2.default);
-    slack.getImIds(users.map(({ id }) => id)).then(imData => imData.filter(item => item.imId === 'D547CU95J').forEach(imItem => {
+    slack.getImIds(users.map(({ id }) => id)).then(imData => imData.forEach(imItem => {
       const user = users.find(({ id }) => imItem.userId === id);
       _log2.default.info(`Notify ${user.email}`);
       app.calcFlexTime(user.email).then(data => slack.postMessage(imItem.imId, data));
