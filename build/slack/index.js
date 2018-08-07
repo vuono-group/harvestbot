@@ -19,11 +19,15 @@ exports.default = (config, http, responseUrl) => {
 
   const postResponse = (header, messageArray) => api.postJson(responseUrl, { text: header, attachments: messageArray ? [{ text: messageArray.join('\n') }] : [] }).toPromise();
 
-  const postToChannel = (imId, userId, { header, messages }) => api.postJson('/chat.postEphemeral', {
-    channel: imId, text: header, attachments: [{ text: messages.join('\n') }], as_user: false, user: userId
+  const postToChannel = (imId, userId, header, messages) => api.postJson('/chat.postEphemeral', {
+    channel: imId,
+    text: header,
+    attachments: messages ? [{ text: messages.join('\n') }] : [],
+    as_user: false,
+    user: userId
   }).toPromise();
 
-  const postMessage = (userId, { header, messages }) => responseUrl ? postResponse(header, messages) : postToChannel(config.notifyChannelId, userId, { header, messages });
+  const postMessage = (userId, header, messages) => responseUrl ? postResponse(header, messages) : postToChannel(config.notifyChannelId, userId, header, messages);
 
   return {
     getUserEmailForId, postMessage
