@@ -34,7 +34,6 @@ export const initFlextime = async (req, res) => {
 };
 
 export const calcFlextime = async (message) => {
-  logger.info(message);
   const config = validateEnv();
   const request = JSON.parse(Buffer.from(message.data, 'base64').toString());
   const slack = slackApi(config, http, request.responseUrl);
@@ -46,12 +45,18 @@ export const calcFlextime = async (message) => {
     if (!email) {
       return slack.postMessage(userId, 'Cannot find email for Slack user id');
     }
-    db(config).storeUserData(userId, email);
-    await slack.postMessage(userId, `Fetching time entries for email ${email}`);
+    if (!request.email) {
+      await slack.postMessage(userId, `Fetching time entries for email ${email}`);
+    }
+    await db(config).storeUserData(userId, email);
+    logger.info('User data stored');
+
     const data = await application(config, http).calcFlextime(email);
+    logger.info('Flextime calculated');
+
     return slack.postMessage(userId, data.header, data.messages);
   }
-  return slack.postMessage(userId, 'Cannot find Slack user id');
+  return logger.error('Cannot find Slack user id');
 };
 
 export const notifyUsers = async (req, res) => {
