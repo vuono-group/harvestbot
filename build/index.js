@@ -53,7 +53,7 @@ const initFlextime = exports.initFlextime = async (req, res) => {
     }
     const text = req.body.response_url ? 'Starting to calculate flextime. This may take a while...' : 'ok';
     const config = validateEnv();
-    await (0, _queue2.default)(config).enqueue({ userId: req.body.user_id, responseUrl: req.body.responseUrl });
+    await (0, _queue2.default)(config).enqueue({ userId: req.body.user_id, responseUrl: req.body.response_url });
     return res.json({ text });
   }
   return res.json({ text: 'Payload missing' });
@@ -68,29 +68,29 @@ const calcFlextime = exports.calcFlextime = async message => {
 
   if (userId) {
     _log2.default.info(`Fetching data for user id ${userId}`);
-    const email = await slack.getUserEmailForId(userId);
+    const email = request.email || (await slack.getUserEmailForId(userId));
     if (!email) {
-      return slack.postResponse({ text: 'Cannot find email for Slack user id' });
+      return slack.postMessage(userId, 'Cannot find email for Slack user id');
     }
     (0, _db2.default)(config).storeUserData(userId, email);
-    return (0, _app2.default)(config, _http2.default).sendFlexTime(email, slack.postResponse);
+    await slack.postMessage(userId, `Fetching time entries for email ${email}`);
+    const data = await (0, _app2.default)(config, _http2.default).calcFlextime(email);
+    return slack.postMessage(userId, data.header, data.messages);
   }
-  return slack.postResponse({ text: 'Cannot find email for Slack user id' });
+  return slack.postMessage(userId, 'Cannot find Slack user id');
 };
 
 const notifyUsers = exports.notifyUsers = async (req, res) => {
   const config = validateEnv();
   const store = (0, _db2.default)(config);
-  const slack = (0, _slack2.default)(config, _http2.default);
-  const app = (0, _app2.default)(config, _http2.default);
+  const msgQueue = (0, _queue2.default)(config);
 
   const users = await store.fetchUsers;
   _log2.default.info(`Found ${users.length} users`);
 
   await Promise.all(users.map(async ({ email, id }) => {
     _log2.default.info(`Notify ${email}`);
-    const data = await app.calcFlexTime(email);
-    return slack.postMessage(config.notifyChannelId, id, data);
+    return msgQueue.enqueue({ userId: id, email });
   }));
   return res.json({ text: 'ok' });
 };
@@ -103,10 +103,11 @@ if (process.argv.length === 3) {
     }
   };
 
-  const email = process.argv[2];
-  _log2.default.info(`Email ${email}`);
-  const app = (0, _app2.default)(validateEnv(), _http2.default);
-  app.sendFlexTime(email, printResponse);
-  // initFlextime({ }, { json: data => logger.info(data) });
-  // notifyUsers(null, { json: data => logger.info(data) });
+  (async () => {
+    const email = process.argv[2];
+    _log2.default.info(`Email ${email}`);
+    const app = (0, _app2.default)(validateEnv(), _http2.default);
+    const data = await app.calcFlextime(email);
+    printResponse(data.header, data.messages);
+  })();
 }

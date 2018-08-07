@@ -33,7 +33,7 @@ exports.default = (config, http) => {
   const tracker = (0, _harvest2.default)(config, http);
   const round = val => Math.floor(val * 2) / 2;
 
-  const calcFlexTime = async email => {
+  const calcFlextime = async email => {
     const userName = validateEmail(email);
     if (!userName) {
       return { header: `Invalid email domain for ${email}` };
@@ -70,13 +70,7 @@ exports.default = (config, http) => {
     return { header, messages };
   };
 
-  const sendFlexTime = (email, response) => {
-    response(`Fetching time entries for email ${email}`);
-    calcFlexTime(email).then(({ header, messages }) => response(header, messages));
-  };
-
   return {
-    calcFlexTime,
-    sendFlexTime
+    calcFlextime
   };
 };

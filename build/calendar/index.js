@@ -28,7 +28,7 @@ exports.default = () => {
   const getYesterday = date => new Date(date.setDate(date.getDate() - 1));
 
   const getTotalWorkHoursSinceDate = (fromDate, toDate) => {
-    let workingDate = toDate;
+    let workingDate = new Date(toDate);
     let hours = 0;
     do {
       hours += isWorkingDay(workingDate) ? HOURS_IN_DAY : 0;
