@@ -51,7 +51,7 @@ const initFlextime = exports.initFlextime = async (req, res) => {
     if (req.body.text === 'help') {
       return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
     }
-    const text = req.body.response_url ? 'Starting to calculate flextime. This may take a while...' : 'ok';
+    const text = req.body.response_url ? 'Starting to calculate flextime. This may take a while... Join channel #harvest for weekly notifications.' : 'ok';
     const config = validateEnv();
     await (0, _queue2.default)(config).enqueue({ userId: req.body.user_id, responseUrl: req.body.response_url });
     return res.json({ text });
