@@ -1,22 +1,24 @@
 import application from './app';
 import logger from './log';
 import db from './db';
-import http from './http';
 import queue from './queue';
+import http from './http';
 import slackApi from './slack';
 
 const validateEnv = () => {
   const getEnvParam = param => (process.env[param] ? process.env[param] : logger.error(`Environment variable ${param} missing.`));
-  const config = {};
   const ignoreTaskIds = getEnvParam('IGNORE_FROM_FLEX_TASK_IDS');
   const emailDomains = getEnvParam('ALLOWED_EMAIL_DOMAINS');
-  config.ignoreTaskIds = ignoreTaskIds ? ignoreTaskIds.split(',').map(id => parseInt(id, 10)) : [];
-  config.emailDomains = emailDomains ? emailDomains.split(',') : [];
-  config.projectId = getEnvParam('GCLOUD_PROJECT');
-  config.harvestAccessToken = getEnvParam('HARVEST_ACCESS_TOKEN');
-  config.harvestAccountId = getEnvParam('HARVEST_ACCOUNT_ID');
-  config.slackBotToken = getEnvParam('SLACK_BOT_TOKEN');
-  config.notifyChannelId = getEnvParam('SLACK_NOTIFY_CHANNEL_ID');
+  const config = {
+    ignoreTaskIds: ignoreTaskIds ? ignoreTaskIds.split(',').map(id => parseInt(id, 10)) : [],
+    emailDomains: emailDomains ? emailDomains.split(',') : [],
+    projectId: getEnvParam('GCLOUD_PROJECT'),
+    harvestAccessToken: getEnvParam('HARVEST_ACCESS_TOKEN'),
+    harvestAccountId: getEnvParam('HARVEST_ACCOUNT_ID'),
+    slackBotToken: getEnvParam('SLACK_BOT_TOKEN'),
+    notifyChannelId: getEnvParam('SLACK_NOTIFY_CHANNEL_ID'),
+    currentTime: new Date().getTime() / 1000,
+  };
   return config;
 };
 
