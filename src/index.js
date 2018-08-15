@@ -1,36 +1,40 @@
 import application from './app';
 import logger from './log';
 import db from './db';
-import http from './http';
 import queue from './queue';
+import http from './http';
 import slackApi from './slack';
+import verifier from './verifier';
 
 const validateEnv = () => {
   const getEnvParam = param => (process.env[param] ? process.env[param] : logger.error(`Environment variable ${param} missing.`));
-  const config = {};
   const ignoreTaskIds = getEnvParam('IGNORE_FROM_FLEX_TASK_IDS');
   const emailDomains = getEnvParam('ALLOWED_EMAIL_DOMAINS');
-  config.ignoreTaskIds = ignoreTaskIds ? ignoreTaskIds.split(',').map(id => parseInt(id, 10)) : [];
-  config.emailDomains = emailDomains ? emailDomains.split(',') : [];
-  config.projectId = getEnvParam('GCLOUD_PROJECT');
-  config.harvestAccessToken = getEnvParam('HARVEST_ACCESS_TOKEN');
-  config.harvestAccountId = getEnvParam('HARVEST_ACCOUNT_ID');
-  config.slackBotToken = getEnvParam('SLACK_BOT_TOKEN');
-  config.notifyChannelId = getEnvParam('SLACK_NOTIFY_CHANNEL_ID');
+  const config = {
+    ignoreTaskIds: ignoreTaskIds ? ignoreTaskIds.split(',').map(id => parseInt(id, 10)) : [],
+    emailDomains: emailDomains ? emailDomains.split(',') : [],
+    projectId: getEnvParam('GCLOUD_PROJECT'),
+    harvestAccessToken: getEnvParam('HARVEST_ACCESS_TOKEN'),
+    harvestAccountId: getEnvParam('HARVEST_ACCOUNT_ID'),
+    slackBotToken: getEnvParam('SLACK_BOT_TOKEN'),
+    slackSigningSecret: getEnvParam('SLACK_SIGNING_SECRET'),
+    notifyChannelId: getEnvParam('SLACK_NOTIFY_CHANNEL_ID'),
+    currentTime: new Date().getTime() / 1000,
+  };
   return config;
 };
 
 export const initFlextime = async (req, res) => {
-  if (req.body) {
+  const config = validateEnv();
+  if (verifier(config).verifySlackRequest(req)) {
     if (req.body.text === 'help') {
       return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
     }
     const text = req.body.response_url ? 'Starting to calculate flextime. This may take a while... Join channel #harvest for weekly notifications.' : 'ok';
-    const config = validateEnv();
     await queue(config).enqueue({ userId: req.body.user_id, responseUrl: req.body.response_url });
     return res.json({ text });
   }
-  return res.json({ text: 'Payload missing' });
+  return res.status(401).send('Unauthorized');
 };
 
 export const calcFlextime = async (message) => {

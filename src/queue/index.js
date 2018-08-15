@@ -6,11 +6,8 @@ export default (config) => {
     projectId: config.projectId,
   });
 
-  const enqueue = data =>
-    pubsubClient
-      .topic(topicName)
-      .publisher()
-      .publish(Buffer.from(JSON.stringify(data)));
+  const enqueue = data => pubsubClient
+    .topic(topicName).publisher().publish(Buffer.from(JSON.stringify(data)));
 
   return { enqueue };
 };
