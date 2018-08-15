@@ -4,6 +4,7 @@ import db from './db';
 import queue from './queue';
 import http from './http';
 import slackApi from './slack';
+import verifier from './verifier';
 
 const validateEnv = () => {
   const getEnvParam = param => (process.env[param] ? process.env[param] : logger.error(`Environment variable ${param} missing.`));
@@ -16,6 +17,7 @@ const validateEnv = () => {
     harvestAccessToken: getEnvParam('HARVEST_ACCESS_TOKEN'),
     harvestAccountId: getEnvParam('HARVEST_ACCOUNT_ID'),
     slackBotToken: getEnvParam('SLACK_BOT_TOKEN'),
+    slackSigningSecret: getEnvParam('SLACK_SIGNING_SECRET'),
     notifyChannelId: getEnvParam('SLACK_NOTIFY_CHANNEL_ID'),
     currentTime: new Date().getTime() / 1000,
   };
@@ -23,16 +25,16 @@ const validateEnv = () => {
 };
 
 export const initFlextime = async (req, res) => {
-  if (req.body) {
+  const config = validateEnv();
+  if (verifier(config).verifySlackRequest(req)) {
     if (req.body.text === 'help') {
       return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
     }
     const text = req.body.response_url ? 'Starting to calculate flextime. This may take a while... Join channel #harvest for weekly notifications.' : 'ok';
-    const config = validateEnv();
     await queue(config).enqueue({ userId: req.body.user_id, responseUrl: req.body.response_url });
     return res.json({ text });
   }
-  return res.json({ text: 'Payload missing' });
+  return res.status(401).send('Unauthorized');
 };
 
 export const calcFlextime = async (message) => {
