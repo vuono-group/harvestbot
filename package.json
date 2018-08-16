@@ -36,7 +36,8 @@
     "axios": "^0.18.0",
     "rxios": "^1.1.2",
     "rxjs": "^5.5.10",
-    "winston": "^2.4.2"
+    "winston": "^2.4.2",
+    "xlsx": "^0.13.4"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
