@@ -1,7 +1,8 @@
 import logger from '../log';
-import harvest from '../harvest';
-import analyze from '../analyzer';
-import cal from '../calendar';
+
+import analyze from './analyzer';
+import cal from './calendar';
+import harvest from './harvest';
 
 export default (config, http) => {
   const formatDate = date => date.toLocaleDateString(
