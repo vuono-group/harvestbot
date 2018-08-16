@@ -1,7 +1,7 @@
 import application from './app';
 import logger from './log';
-import db from './db';
-import queue from './queue';
+import db from './cloud/db';
+import queue from './cloud/queue';
 import http from './http';
 import slackApi from './slack';
 import verifier from './verifier';
@@ -81,6 +81,7 @@ export const notifyUsers = async (req, res) => {
   return res.status(401).send('Unauthorized');
 };
 
+// Local testing
 if (process.argv.length === 3) {
   const printResponse =
     (header, msgs) => {
