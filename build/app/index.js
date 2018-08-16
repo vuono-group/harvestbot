@@ -8,17 +8,17 @@ var _log = require('../log');
 
 var _log2 = _interopRequireDefault(_log);
 
-var _harvest = require('../harvest');
-
-var _harvest2 = _interopRequireDefault(_harvest);
-
-var _analyzer = require('../analyzer');
+var _analyzer = require('./analyzer');
 
 var _analyzer2 = _interopRequireDefault(_analyzer);
 
-var _calendar = require('../calendar');
+var _calendar = require('./calendar');
 
 var _calendar2 = _interopRequireDefault(_calendar);
+
+var _harvest = require('./harvest');
+
+var _harvest2 = _interopRequireDefault(_harvest);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 

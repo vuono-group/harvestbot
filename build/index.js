@@ -13,11 +13,11 @@ var _log = require('./log');
 
 var _log2 = _interopRequireDefault(_log);
 
-var _db = require('./db');
+var _db = require('./cloud/db');
 
 var _db2 = _interopRequireDefault(_db);
 
-var _queue = require('./queue');
+var _queue = require('./cloud/queue');
 
 var _queue2 = _interopRequireDefault(_queue);
 
@@ -110,6 +110,7 @@ const notifyUsers = exports.notifyUsers = async (req, res) => {
   return res.status(401).send('Unauthorized');
 };
 
+// Local testing
 if (process.argv.length === 3) {
   const printResponse = (header, msgs) => {
     _log2.default.info(header);
