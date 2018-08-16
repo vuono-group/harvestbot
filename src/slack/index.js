@@ -13,6 +13,13 @@ export default (config, http, responseUrl) => {
 
   const getUserEmailForId = userId =>
     api.getJson(`/users.info?user=${userId}&token=${config.slackBotToken}`)
+      .filter(({
+        user: {
+          deleted,
+          is_restricted: isMultiChannelGuest,
+          is_ultra_restricted: isSingleChannelGuest,
+        },
+      }) => !deleted && !isMultiChannelGuest && !isSingleChannelGuest)
       .mergeMap(({ user: { profile: { email } } }) => Observable.of(email))
       .toPromise();
 
