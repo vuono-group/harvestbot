@@ -5,11 +5,13 @@ import queue from './cloud/queue';
 import http from './http';
 import slackApi from './slack';
 import verifier from './verifier';
+import { DEFAULT_COLUMN_HEADERS } from './defaults';
 
 const validateEnv = () => {
   const getEnvParam = param => (process.env[param] ? process.env[param] : logger.error(`Environment variable ${param} missing.`));
   const ignoreTaskIds = getEnvParam('IGNORE_FROM_FLEX_TASK_IDS');
   const emailDomains = getEnvParam('ALLOWED_EMAIL_DOMAINS');
+  const columnHeaders = getEnvParam('STATS_COLUMN_HEADERS');
   const config = {
     ignoreTaskIds: ignoreTaskIds ? ignoreTaskIds.split(',').map(id => parseInt(id, 10)) : [],
     emailDomains: emailDomains ? emailDomains.split(',') : [],
@@ -20,6 +22,14 @@ const validateEnv = () => {
     slackSigningSecret: getEnvParam('SLACK_SIGNING_SECRET'),
     notifyChannelId: getEnvParam('SLACK_NOTIFY_CHANNEL_ID'),
     currentTime: new Date().getTime() / 1000,
+    statsColumnHeaders: columnHeaders ? columnHeaders.split(',') : DEFAULT_COLUMN_HEADERS,
+    taskIds: {
+      publicHoliday: parseInt(getEnvParam('TASK_ID_PUBLIC_HOLIDAY'), 10),
+      vacation: parseInt(getEnvParam('TASK_ID_VACATION'), 10),
+      unpaidLeave: parseInt(getEnvParam('TASK_ID_UNPAID_LEAVE'), 10),
+      sickLeave: parseInt(getEnvParam('TASK_ID_SICK_LEAVE'), 10),
+      flexLeave: parseInt(getEnvParam('TASK_ID_FLEX_LEAVE'), 10),
+    },
   };
   return config;
 };
@@ -92,10 +102,11 @@ if (process.argv.length === 3) {
     };
 
   (async () => {
-    const email = process.argv[2];
-    logger.info(`Email ${email}`);
+    //const email = process.argv[2];
+    //logger.info(`Email ${email}`);
     const app = application(validateEnv(), http);
-    const data = await app.calcFlextime(email);
-    printResponse(data.header, data.messages);
+    app.generateReport();
+    //const data = await app.calcFlextime(email);
+    //printResponse(data.header, data.messages);
   })();
 }
