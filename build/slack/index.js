@@ -15,7 +15,13 @@ exports.default = (config, http, responseUrl) => {
     Authorization: `Bearer ${config.slackBotToken}`
   });
 
-  const getUserEmailForId = userId => api.getJson(`/users.info?user=${userId}&token=${config.slackBotToken}`).mergeMap(({ user: { profile: { email } } }) => _rxjs.Observable.of(email)).toPromise();
+  const getUserEmailForId = userId => api.getJson(`/users.info?user=${userId}&token=${config.slackBotToken}`).filter(({
+    user: {
+      deleted,
+      is_restricted: isMultiChannelGuest,
+      is_ultra_restricted: isSingleChannelGuest
+    }
+  }) => !deleted && !isMultiChannelGuest && !isSingleChannelGuest).mergeMap(({ user: { profile: { email } } }) => _rxjs.Observable.of(email)).toPromise();
 
   const postResponse = (header, messageArray) => api.postJson(responseUrl, { text: header, attachments: messageArray ? [{ text: messageArray.join('\n') }] : [] }).toPromise();
 
