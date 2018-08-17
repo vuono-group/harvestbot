@@ -41,8 +41,7 @@ export default (config, http) => {
 
   const getAllUsers = () => getUsersForPage(1)
     .expand(({ nextPage }) => (nextPage ? getUsersForPage(nextPage) : empty()))
-    .mergeMap(({ users }) => users)
-    .reduce((result, item) => [...result, item], []);
+    .mergeMap(({ users }) => users);
 
   const getTimeEntriesForEmail = (userName, validateEmail = () => null) =>
     getAllUsers()
@@ -53,7 +52,7 @@ export default (config, http) => {
   const getTimeEntriesForUserId = (userId, year) =>
     getTimeEntriesForId(userId, year).toPromise();
 
-  const getUsers = () => getAllUsers().toPromise();
+  const getUsers = () => getAllUsers().reduce((result, item) => [...result, item], []).toPromise();
 
   return { getTimeEntriesForUserId, getTimeEntriesForEmail, getUsers };
 };

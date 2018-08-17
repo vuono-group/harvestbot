@@ -110,8 +110,8 @@ export const calcStats = async (message) => {
   const { userId, year, month } = request;
 
   if (userId) {
-    logger.info(`Fetching data for user id ${userId}`);
-    const email = await slack.getUserEmailForId(userId); // TODO: authorization
+    logger.info(`Calculating stats requested by user ${userId}`);
+    const email = await slack.getUserEmailForId(userId); // TODO: need slack admin role?
     if (!email) {
       return slack.postMessage(userId, 'Cannot find email for Slack user id');
     }
