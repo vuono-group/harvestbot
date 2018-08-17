@@ -14,7 +14,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 // import logger from '../log';
 
-exports.default = () => {
+exports.default = ({ ignoreTaskIds, taskIds }) => {
   const calendar = (0, _calendar2.default)();
   const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
 
@@ -33,7 +33,7 @@ exports.default = () => {
     end: endDate // today or last calendar working day
   });
 
-  const calculateWorkedHours = (entries, ignoreTaskIds) => entries.reduce((result, entry) => {
+  const calculateWorkedHours = entries => entries.reduce((result, entry) => {
     const ignore = ignoreTaskIds.includes(entry.taskId);
     return _extends({}, result, {
       warnings: !ignore && !calendar.isWorkingDay(new Date(entry.date)) ? [...result.warnings, `Recorded hours in non-working day (${entry.date})!`] : result.warnings,
@@ -45,8 +45,81 @@ exports.default = () => {
     billablePercentageCurrentMonth: getBillablePercentageCurrentMonth(entries)
   });
 
+  const isPublicHoliday = taskId => taskId === taskIds.publicHoliday;
+  const isVacation = taskId => taskId === taskIds.vacation;
+  const isUnpaidLeave = taskId => taskId === taskIds.unpaidLeave;
+  const isFlexLeave = taskId => taskId === taskIds.flexLeave;
+  const isSickLeave = taskId => taskId === taskIds.sickLeave;
+  const isHoliday = taskId => isPublicHoliday(taskId) || isVacation(taskId) || isUnpaidLeave(taskId);
+  const isHolidayOrFlex = taskId => isHoliday(taskId) || isFlexLeave(taskId);
+  const isAbsence = taskId => isHolidayOrFlex(taskId) || isSickLeave(taskId);
+
+  const addDay = (entry, result) => {
+    const {
+      dates,
+      daysCount: {
+        working,
+        absence,
+        sickLeave,
+        vacation,
+        unpaidLeave,
+        flexLeave
+      }
+    } = result;
+    if (dates.includes(entry.date)) {
+      return result;
+    }
+    return {
+      dates: [...dates, entry.date],
+      daysCount: {
+        working: isHoliday(entry.taskId) ? working : working + 1,
+        absence: isAbsence(entry.taskId) ? absence + 1 : absence,
+        sickLeave: isSickLeave(entry.taskId) ? sickLeave + 1 : sickLeave,
+        vacation: isVacation(entry.taskId) ? vacation + 1 : vacation,
+        unpaidLeave: isUnpaidLeave(entry.taskId) ? unpaidLeave + 1 : unpaidLeave,
+        flexLeave: isFlexLeave(entry.taskId) ? flexLeave + 1 : flexLeave
+      }
+    };
+  };
+
+  const getStats = ({ user, entries }, fullCalendarDays, recordedHours = entries.reduce((result, entry) => _extends({}, addDay(entry, result), {
+    hours: !isHolidayOrFlex(entry.taskId) ? result.hours + entry.hours : result.hours,
+    billableHours: entry.billable ? result.billableHours + entry.hours : result.billableHours,
+    projectNames: entry.billable && !result.projectNames.includes(entry.projectName) ? [...result.projectNames, entry.projectName] : result.projectNames
+  }), {
+    dates: [],
+    daysCount: {
+      working: 0,
+      absence: 0,
+      sickLeave: 0,
+      vacation: 0,
+      unpaidLeave: 0,
+      flexLeave: 0
+    },
+    hours: 0,
+    billableHours: 0,
+    projectNames: []
+  }), hoursPerCalendar = recordedHours.daysCount.working * calendar.HOURS_IN_DAY) => ({
+    name: `${user.first_name} ${user.last_name}`,
+    days: recordedHours.daysCount.working,
+    hoursPerCalendar,
+    hours: recordedHours.hours,
+    billableHours: recordedHours.billableHours,
+    projectName: recordedHours.projectNames.join(),
+    billablePercentage: recordedHours.billableHours / recordedHours.hours * 100,
+    flexSaldo: recordedHours.hours - hoursPerCalendar,
+    absentDays: recordedHours.daysCount.absence,
+    sickDays: recordedHours.daysCount.sickLeave,
+    vacationDays: recordedHours.daysCount.vacation,
+    unpaidLeaveDays: recordedHours.daysCount.unpaidLeave,
+    flexLeaveDays: recordedHours.daysCount.flexLeave,
+    markedDays: recordedHours.dates.length,
+    missingDays: recordedHours.dates.length - fullCalendarDays
+  });
+
   return {
     getPeriodRange,
-    calculateWorkedHours
+    calculateWorkedHours,
+    getStats
   };
 };

@@ -24,9 +24,11 @@ exports.default = (config, http) => {
     'Harvest-Account-Id': config.harvestAccountId
   });
 
-  const getTimeEntriesForPage = (userId, page) => api.getJson(`/time_entries?user_id=${userId}&page=${page}`).map(({ next_page: nextPage, time_entries: entries }) => ({ entries, nextPage }));
+  const getRangeQueryString = year => `&from=${year}-01-01&to=${year}-12-31`;
 
-  const getTimeEntriesForUserId = userId => getTimeEntriesForPage(userId, 1).expand(({ nextPage }) => nextPage ? getTimeEntriesForPage(userId, nextPage) : (0, _empty.empty)()).mergeMap(({ entries }) => entries).map(({
+  const getTimeEntriesForPage = (userId, year, page) => api.getJson(`/time_entries?user_id=${userId}&page=${page}${year ? getRangeQueryString(year) : ''}`).map(({ next_page: nextPage, time_entries: entries }) => ({ entries, nextPage }));
+
+  const getTimeEntriesForId = (userId, year = null) => getTimeEntriesForPage(userId, year, 1).expand(({ nextPage }) => nextPage ? getTimeEntriesForPage(userId, year, nextPage) : (0, _empty.empty)()).mergeMap(({ entries }) => entries).map(({
     spent_date: date, hours, billable,
     project: { id: projectId, name: projectName },
     task: { id: taskId, name: taskName }
@@ -34,7 +36,15 @@ exports.default = (config, http) => {
     date, hours, billable, projectId, projectName, taskId, taskName
   })).reduce((result, item) => [...result, item], []);
 
-  const getTimeEntries = (userName, validateEmail = () => null) => api.getJson('/users').mergeMap(({ users }) => users).first(({ email }) => userName === validateEmail(email)).mergeMap(({ id }) => getTimeEntriesForUserId(id)).toPromise();
+  const getUsersForPage = page => api.getJson(`/users?page=${page}`).map(({ users, next_page: nextPage }) => ({ users, nextPage }));
 
-  return { getTimeEntries };
+  const getAllUsers = () => getUsersForPage(1).expand(({ nextPage }) => nextPage ? getUsersForPage(nextPage) : (0, _empty.empty)()).mergeMap(({ users }) => users).reduce((result, item) => [...result, item], []);
+
+  const getTimeEntriesForEmail = (userName, validateEmail = () => null) => getAllUsers().first(({ email }) => userName === validateEmail(email)).mergeMap(({ id }) => getTimeEntriesForId(id)).toPromise();
+
+  const getTimeEntriesForUserId = (userId, year) => getTimeEntriesForId(userId, year).toPromise();
+
+  const getUsers = () => getAllUsers().toPromise();
+
+  return { getTimeEntriesForUserId, getTimeEntriesForEmail, getUsers };
 };

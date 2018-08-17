@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.notifyUsers = exports.calcFlextime = exports.initFlextime = undefined;
+exports.calcStats = exports.notifyUsers = exports.calcFlextime = exports.initFlextime = undefined;
 
 var _app = require('./app');
 
@@ -33,12 +33,15 @@ var _verifier = require('./verifier');
 
 var _verifier2 = _interopRequireDefault(_verifier);
 
+var _defaults = require('./defaults');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 const validateEnv = () => {
   const getEnvParam = param => process.env[param] ? process.env[param] : _log2.default.error(`Environment variable ${param} missing.`);
   const ignoreTaskIds = getEnvParam('IGNORE_FROM_FLEX_TASK_IDS');
   const emailDomains = getEnvParam('ALLOWED_EMAIL_DOMAINS');
+  const columnHeaders = getEnvParam('STATS_COLUMN_HEADERS');
   const config = {
     ignoreTaskIds: ignoreTaskIds ? ignoreTaskIds.split(',').map(id => parseInt(id, 10)) : [],
     emailDomains: emailDomains ? emailDomains.split(',') : [],
@@ -48,7 +51,16 @@ const validateEnv = () => {
     slackBotToken: getEnvParam('SLACK_BOT_TOKEN'),
     slackSigningSecret: getEnvParam('SLACK_SIGNING_SECRET'),
     notifyChannelId: getEnvParam('SLACK_NOTIFY_CHANNEL_ID'),
-    currentTime: new Date().getTime() / 1000
+    currentTime: new Date().getTime() / 1000,
+    statsColumnHeaders: columnHeaders ? columnHeaders.split(',') : _defaults.DEFAULT_COLUMN_HEADERS,
+    sendGridApiKey: getEnvParam('SENDGRID_API_KEY'),
+    taskIds: {
+      publicHoliday: parseInt(getEnvParam('TASK_ID_PUBLIC_HOLIDAY'), 10),
+      vacation: parseInt(getEnvParam('TASK_ID_VACATION'), 10),
+      unpaidLeave: parseInt(getEnvParam('TASK_ID_UNPAID_LEAVE'), 10),
+      sickLeave: parseInt(getEnvParam('TASK_ID_SICK_LEAVE'), 10),
+      flexLeave: parseInt(getEnvParam('TASK_ID_FLEX_LEAVE'), 10)
+    }
   };
   return config;
 };
@@ -59,9 +71,18 @@ const initFlextime = exports.initFlextime = async (req, res) => {
     if (req.body.text === 'help') {
       return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
     }
-    const text = req.body.response_url ? 'Starting to calculate flextime. This may take a while... Join channel #harvest for weekly notifications.' : 'ok';
-    await (0, _queue2.default)(config).enqueue({ userId: req.body.user_id, responseUrl: req.body.response_url });
-    return res.json({ text });
+    const cmdParts = req.body.text.split(' ');
+    if (cmdParts.length > 0 && cmdParts[0] === 'stats') {
+      const currentDate = new Date();
+      const year = cmdParts.length > 1 ? parseInt(cmdParts[1], 10) : currentDate.getFullYear();
+      const month = cmdParts.length > 2 ? parseInt(cmdParts[2], 10) : currentDate.getMonth() + 1;
+      await (0, _queue2.default)(config).enqueueStatsRequest({
+        userId: req.body.user_id, responseUrl: req.body.response_url, year, month
+      });
+      return res.json({ text: 'Starting to generate stats. This may take a while...' });
+    }
+    await (0, _queue2.default)(config).enqueueFlexTimeRequest({ userId: req.body.user_id, responseUrl: req.body.response_url });
+    return res.json({ text: 'Starting to calculate flextime. This may take a while... Join channel #harvest for weekly notifications.' });
   }
   return res.status(401).send('Unauthorized');
 };
@@ -103,11 +124,32 @@ const notifyUsers = exports.notifyUsers = async (req, res) => {
 
     await Promise.all(users.map(async ({ email, id }) => {
       _log2.default.info(`Notify ${email}`);
-      return msgQueue.enqueue({ userId: id, email });
+      return msgQueue.enqueueFlexTimeRequest({ userId: id, email });
     }));
     return res.json({ text: 'ok' });
   }
   return res.status(401).send('Unauthorized');
+};
+
+const calcStats = exports.calcStats = async message => {
+  const config = validateEnv();
+  const request = JSON.parse(Buffer.from(message.data, 'base64').toString());
+  const slack = (0, _slack2.default)(config, _http2.default, request.responseUrl);
+  const { userId, year, month } = request;
+
+  if (userId) {
+    _log2.default.info(`Fetching data for user id ${userId}`);
+    const email = await slack.getUserEmailForId(userId); // TODO: authorization
+    if (!email) {
+      return slack.postMessage(userId, 'Cannot find email for Slack user id');
+    }
+
+    const result = await (0, _app2.default)(config, _http2.default).generateReport(year, month, email);
+    _log2.default.info('Stats generated');
+
+    return slack.postMessage(userId, result);
+  }
+  return _log2.default.error('Cannot find Slack user id');
 };
 
 // Local testing
