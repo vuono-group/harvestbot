@@ -16,14 +16,16 @@ export default (config, http) => {
     },
   );
 
-  const getTimeEntriesForPage = (userId, page) =>
-    api.getJson(`/time_entries?user_id=${userId}&page=${page}`)
+  const getRangeQueryString = year => `&from=${year}-01-01&to=${year}-12-31`;
+
+  const getTimeEntriesForPage = (userId, year, page) =>
+    api.getJson(`/time_entries?user_id=${userId}&page=${page}${year ? getRangeQueryString(year) : ''}`)
       .map(({ next_page: nextPage, time_entries: entries }) => ({ entries, nextPage }));
 
-  const getTimeEntriesForUserId = userId =>
-    getTimeEntriesForPage(userId, 1)
+  const getTimeEntriesForId = (userId, year = null) =>
+    getTimeEntriesForPage(userId, year, 1)
       .expand(({ nextPage }) => (nextPage
-        ? getTimeEntriesForPage(userId, nextPage)
+        ? getTimeEntriesForPage(userId, year, nextPage)
         : empty()))
       .mergeMap(({ entries }) => entries)
       .map(({
@@ -35,12 +37,23 @@ export default (config, http) => {
       }))
       .reduce((result, item) => [...result, item], []);
 
-  const getTimeEntries = (userName, validateEmail = () => null) =>
-    api.getJson('/users')
-      .mergeMap(({ users }) => users)
+  const getUsersForPage = page => api.getJson(`/users?page=${page}`).map(({ users, next_page: nextPage }) => ({ users, nextPage }));
+
+  const getAllUsers = () => getUsersForPage(1)
+    .expand(({ nextPage }) => (nextPage ? getUsersForPage(nextPage) : empty()))
+    .mergeMap(({ users }) => users)
+    .reduce((result, item) => [...result, item], []);
+
+  const getTimeEntriesForEmail = (userName, validateEmail = () => null) =>
+    getAllUsers()
       .first(({ email }) => userName === validateEmail(email))
-      .mergeMap(({ id }) => getTimeEntriesForUserId(id))
+      .mergeMap(({ id }) => getTimeEntriesForId(id))
       .toPromise();
 
-  return { getTimeEntries };
+  const getTimeEntriesForUserId = (userId, year) =>
+    getTimeEntriesForId(userId, year).toPromise();
+
+  const getUsers = () => getAllUsers().toPromise();
+
+  return { getTimeEntriesForUserId, getTimeEntriesForEmail, getUsers };
 };

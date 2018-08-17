@@ -17,12 +17,12 @@ describe('Harvest', () => {
   const mockHttp = () => ({
     getJson: params => Observable.of((params.includes('/users') ? mockUsers : mockEntries)),
   });
-  const { getTimeEntries } = harvest(mockConfig, mockHttp);
+  const { getTimeEntriesForEmail } = harvest(mockConfig, mockHttp);
 
-  describe('getTimeEntries', () => {
+  describe('getTimeEntriesForEmail', () => {
     it('should get time entries', () => {
       expect.assertions(1);
-      getTimeEntries('user', () => 'user')
+      getTimeEntriesForEmail('user', () => 'user')
         .then((res) => {
           const expected = mockEntries.time_entries[0];
           return expect(res).toEqual([{

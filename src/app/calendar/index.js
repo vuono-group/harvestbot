@@ -39,12 +39,21 @@ export default () => {
     return workingDate;
   };
 
+  const getWorkingDaysForMonth = (year, month) => {
+    const monthStartDate = new Date(year, month - 1, 1, 12);
+    const monthEndDate = new Date(year, month, 0, 12);
+    const workHoursInMonth = getTotalWorkHoursSinceDate(monthStartDate, monthEndDate);
+    return workHoursInMonth / HOURS_IN_DAY;
+  };
+
   return {
     CURRENT_MONTH,
     CURRENT_YEAR,
+    HOURS_IN_DAY,
     datesEqual,
     isWorkingDay,
     getLatestFullWorkingDay,
     getTotalWorkHoursSinceDate,
+    getWorkingDaysForMonth,
   };
 };
