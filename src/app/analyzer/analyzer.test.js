@@ -52,12 +52,23 @@ describe('Analyzer', () => {
   });
   describe('getStats', () => {
     it('should get stats', () =>
-      expect(getStats(mockTask))
+      expect(getStats(mockTask, 1))
         .toEqual({
+          absentDays: 0,
+          billableHours: 7.5,
+          billablePercentage: 100,
           days: 1,
+          flexLeaveDays: 0,
+          flexSaldo: 0,
           hours: 7.5,
           hoursPerCalendar: 7.5,
           name: 'first last',
+          markedDays: 1,
+          missingDays: 0,
+          projectName: 'projectName',
+          sickDays: 0,
+          unpaidLeaveDays: 0,
+          vacationDays: 0,
         }));
   });
 });

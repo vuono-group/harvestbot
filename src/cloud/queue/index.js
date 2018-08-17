@@ -1,13 +1,19 @@
 import PubSub from '@google-cloud/pubsub';
 
 export default (config) => {
-  const topicName = 'flextime';
+  const topics = {
+    flextime: 'flextime',
+    stats: 'stats',
+  };
   const pubsubClient = new PubSub({
     projectId: config.projectId,
   });
 
-  const enqueue = data => pubsubClient
-    .topic(topicName).publisher().publish(Buffer.from(JSON.stringify(data)));
+  const enqueueFlexTimeRequest = data => pubsubClient
+    .topic(topics.flextime).publisher().publish(Buffer.from(JSON.stringify(data)));
 
-  return { enqueue };
+  const enqueueStatsRequest = data => pubsubClient
+    .topic(topics.stats).publisher().publish(Buffer.from(JSON.stringify(data)));
+
+  return { enqueueFlexTimeRequest, enqueueStatsRequest };
 };

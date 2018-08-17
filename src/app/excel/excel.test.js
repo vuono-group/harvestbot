@@ -1,3 +1,6 @@
+import { tmpdir } from 'os';
+import { statSync, unlinkSync } from 'fs';
+
 import excel from './index';
 
 describe('Excel', () => {
@@ -5,8 +8,10 @@ describe('Excel', () => {
 
   describe('writeSheet', () => {
     it('calculate total work hours since date', () => {
-      writer.writeSheet([{ name: 'name' }]);
-      expect(true).toEqual(true);
+      const fileName = `${tmpdir()}/temp.xlsx`;
+      writer.writeSheet([{ name: 'name' }], fileName, 'Title');
+      expect(statSync(fileName)).toBeTruthy();
+      unlinkSync(fileName);
     });
   });
 });

@@ -6,6 +6,7 @@ import analyze from './analyzer';
 import excel from './excel';
 import cal from './calendar';
 import harvest from './harvest';
+import emailer from './emailer';
 
 export default (config, http) => {
   const formatDate = date => date.toLocaleDateString(
@@ -64,10 +65,23 @@ export default (config, http) => {
     return { header, messages };
   };
 
-  const generateReport = async (year = 2018, month = 7) => {
+  // TODO: refactor and optimise
+  const generateReport = async (year, month, email) => {
     const orderValue = (a, b) => (a < b ? -1 : 1);
     const compare = (a, b) => (a === b ? 0 : orderValue(a, b));
+
+    const userName = validateEmail(email);
+    if (!userName) {
+      return `Invalid email domain for ${email}`;
+    }
+
     const users = await tracker.getUsers();
+    const authorisedUser = users.find(user =>
+      user.is_admin && validateEmail(user.email) === userName);
+    if (!authorisedUser) {
+      return `Unable to authorise harvest user ${email}`;
+    }
+
     const sortedUsers = users.sort((a, b) =>
       compare(a.first_name, b.first_name) || compare(a.last_name, b.last_name));
 
@@ -89,9 +103,12 @@ export default (config, http) => {
       { name: 'CALENDAR DAYS', days: workDaysInMonth },
       ...validEntries.map(userData => analyzer.getStats(userData, workDaysInMonth)),
     ];
-    const filePath = `${tmpdir()}/${year}-${month}-${new Date().getTime()}.xlsx`;
+    const fileName = `${year}-${month}-${new Date().getTime()}.xlsx`;
+    const filePath = `${tmpdir()}/${fileName}`;
     logger.info(`Writing stats to ${filePath}`);
     excel().writeSheet(rows, filePath, config.statsColumnHeaders);
+    emailer(config).sendExcelFile(email, 'Monthly harvest stats', `${year}-${month}`, filePath, fileName);
+    return `Stats sent to email ${email}.`;
   };
 
   return {
