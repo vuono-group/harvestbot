@@ -61,6 +61,7 @@ jobs:
           gcloud --quiet config set project ${GCLOUD_PROJECT}
           gcloud functions deploy initFlextime --source ${GCLOUD_REPOSITORY_URL} --region ${GCLOUD_FUNCTION_REGION} --format=none
           gcloud functions deploy calcFlextime --source ${GCLOUD_REPOSITORY_URL} --region ${GCLOUD_FUNCTION_REGION} --format=none
+          gcloud functions deploy calcStats --source ${GCLOUD_REPOSITORY_URL} --region ${GCLOUD_FUNCTION_REGION} --format=none
           gcloud functions deploy notify --source ${GCLOUD_REPOSITORY_URL} --region ${GCLOUD_FUNCTION_REGION} --format=none
 
   notify:
