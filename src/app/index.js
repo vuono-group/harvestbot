@@ -103,10 +103,11 @@ export default (config, http) => {
       { name: 'CALENDAR DAYS', days: workDaysInMonth },
       ...validEntries.map(userData => analyzer.getStats(userData, workDaysInMonth)),
     ];
-    const fileName = `${year}-${month}-${new Date().getTime()}.xlsx`;
+    const sheetTitle = `${year}-${month}`;
+    const fileName = `${sheetTitle}-${new Date().getTime()}.xlsx`;
     const filePath = `${tmpdir()}/${fileName}`;
     logger.info(`Writing stats to ${filePath}`);
-    excel().writeSheet(rows, filePath, config.statsColumnHeaders);
+    excel().writeSheet(rows, filePath, sheetTitle, config.statsColumnHeaders);
     emailer(config).sendExcelFile(email, 'Monthly harvest stats', `${year}-${month}`, filePath, fileName);
     return `Stats sent to email ${email}.`;
   };
