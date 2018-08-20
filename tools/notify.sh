@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 NOTIFY_TIMESTAMP=$(date -u +%s)
 NOTIFY_PAYLOAD="type=cron"
