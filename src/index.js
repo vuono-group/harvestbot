@@ -1,4 +1,5 @@
 import application from './app';
+import cli from './cli';
 import logger from './log';
 import db from './cloud/db';
 import queue from './cloud/queue';
@@ -124,21 +125,4 @@ export const calcStats = async (message) => {
   return logger.error('Cannot find Slack user id');
 };
 
-// Local testing
-if (process.argv.length === 3) {
-  const printResponse =
-    (header, msgs) => {
-      logger.info(header);
-      if (msgs) {
-        msgs.forEach(msg => logger.info(msg));
-      }
-    };
-
-  (async () => {
-    const email = process.argv[2];
-    logger.info(`Email ${email}`);
-    const app = application(validateEnv(), http);
-    const data = await app.calcFlextime(email);
-    printResponse(data.header, data.messages);
-  })();
-}
+cli(validateEnv(), http).start();
