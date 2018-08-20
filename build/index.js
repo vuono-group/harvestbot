@@ -9,6 +9,10 @@ var _app = require('./app');
 
 var _app2 = _interopRequireDefault(_app);
 
+var _cli = require('./cli');
+
+var _cli2 = _interopRequireDefault(_cli);
+
 var _log = require('./log');
 
 var _log2 = _interopRequireDefault(_log);
@@ -152,20 +156,4 @@ const calcStats = exports.calcStats = async message => {
   return _log2.default.error('Cannot find Slack user id');
 };
 
-// Local testing
-if (process.argv.length === 3) {
-  const printResponse = (header, msgs) => {
-    _log2.default.info(header);
-    if (msgs) {
-      msgs.forEach(msg => _log2.default.info(msg));
-    }
-  };
-
-  (async () => {
-    const email = process.argv[2];
-    _log2.default.info(`Email ${email}`);
-    const app = (0, _app2.default)(validateEnv(), _http2.default);
-    const data = await app.calcFlextime(email);
-    printResponse(data.header, data.messages);
-  })();
-}
+(0, _cli2.default)(validateEnv(), _http2.default).start();
