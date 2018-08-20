@@ -109,10 +109,11 @@ exports.default = (config, http) => {
     }));
     const workDaysInMonth = calendar.getWorkingDaysForMonth(year, month);
     const rows = [{ name: 'CALENDAR DAYS', days: workDaysInMonth }, ...validEntries.map(userData => analyzer.getStats(userData, workDaysInMonth))];
-    const fileName = `${year}-${month}-${new Date().getTime()}.xlsx`;
+    const sheetTitle = `${year}-${month}`;
+    const fileName = `${sheetTitle}-${new Date().getTime()}.xlsx`;
     const filePath = `${(0, _os.tmpdir)()}/${fileName}`;
     _log2.default.info(`Writing stats to ${filePath}`);
-    (0, _excel2.default)().writeSheet(rows, filePath, config.statsColumnHeaders);
+    (0, _excel2.default)().writeSheet(rows, filePath, sheetTitle, config.statsColumnHeaders);
     (0, _emailer2.default)(config).sendExcelFile(email, 'Monthly harvest stats', `${year}-${month}`, filePath, fileName);
     return `Stats sent to email ${email}.`;
   };
