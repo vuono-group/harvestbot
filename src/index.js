@@ -14,9 +14,10 @@ const validateEnv = () => {
   const emailDomains = getEnvParam('ALLOWED_EMAIL_DOMAINS');
   const columnHeaders = getEnvParam('STATS_COLUMN_HEADERS');
   const config = {
+    projectId: getEnvParam('GCLOUD_PROJECT'),
+    region: getEnvParam('FUNCTION_REGION'),
     ignoreTaskIds: ignoreTaskIds ? ignoreTaskIds.split(',').map(id => parseInt(id, 10)) : [],
     emailDomains: emailDomains ? emailDomains.split(',') : [],
-    projectId: getEnvParam('GCLOUD_PROJECT'),
     harvestAccessToken: getEnvParam('HARVEST_ACCESS_TOKEN'),
     harvestAccountId: getEnvParam('HARVEST_ACCOUNT_ID'),
     slackBotToken: getEnvParam('SLACK_BOT_TOKEN'),
@@ -125,4 +126,6 @@ export const calcStats = async (message) => {
   return logger.error('Cannot find Slack user id');
 };
 
-cli(validateEnv(), http).start();
+if (!process.env.FUNCTION_NAME) {
+  cli(validateEnv(), http).start();
+}

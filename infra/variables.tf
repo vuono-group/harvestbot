@@ -14,10 +14,6 @@ variable "gcloud_organisation_id" {
   type = "string"
 }
 
-variable "gcloud_member_kms_manager" {
-  type = "string"
-}
-
-variable "gcloud_member_secret_decrypter" {
+variable "gcloud_service_account_email" {
   type = "string"
 }

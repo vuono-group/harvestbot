@@ -1,11 +1,14 @@
 import program from 'commander';
+import configuration from 'config';
 
 import application from '../app';
 import logger from '../log';
+import encrypter from '../cloud/key-ring';
 import { version } from '../../package.json';
 
 export default (config, http) => {
   const app = application(config, http);
+  const { encryptSecret } = encrypter(config);
 
   const printResponse =
     (header, msgs) => {
@@ -27,6 +30,10 @@ export default (config, http) => {
     printResponse(data.header, data.messages);
   };
 
+  const encryptConfiguration = async () => {
+    encryptSecret(JSON.stringify(configuration));
+  };
+
   const start = () => {
     program
       .version(version, '-v, --version');
@@ -38,6 +45,10 @@ export default (config, http) => {
       .command('flextime <email>')
       .description('Calculate flex saldo for given user.')
       .action(calcFlexTime);
+    program
+      .command('encrypt')
+      .description('Encrypt and store app configuration.')
+      .action(encryptConfiguration);
     program.parse(process.argv);
   };
 

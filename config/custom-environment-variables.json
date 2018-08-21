@@ -1,0 +1,19 @@
+{
+  "ignoreTaskIds": "IGNORE_FROM_FLEX_TASK_IDS",
+  "allowedEmailDomains": "ALLOWED_EMAIL_DOMAINS",
+  "projectId": "GCLOUD_PROJECT",
+  "harvestAccessToken": "HARVEST_ACCESS_TOKEN",
+  "harvestAccountId": "HARVEST_ACCOUNT_ID",
+  "slackBotToken": "SLACK_BOT_TOKEN",
+  "slackSigningSecret": "SLACK_SIGNING_SECRET",
+  "notifyChannelId": "SLACK_NOTIFY_CHANNEL_ID",
+  "statsColumnHeaders": "STATS_COLUMN_HEADERS",
+  "sendGridApiKey": "SENDGRID_API_KEY",
+  "taskIds": {
+    "publicHoliday": "TASK_ID_PUBLIC_HOLIDAY",
+    "vacation": "TASK_ID_VACATION",
+    "unpaidLeave": "TASK_ID_UNPAID_LEAVE",
+    "sickLeave": "TASK_ID_SICK_LEAVE",
+    "flexLeave": "TASK_ID_FLEX_LEAVE"
+  }
+}

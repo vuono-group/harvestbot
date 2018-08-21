@@ -15,3 +15,9 @@ resource "google_storage_bucket" "harvestbot-secret-storage" {
   location = "${var.gcloud_project_region}"
   project = "${var.gcloud_project_id}"
 }
+
+resource "google_project_iam_member" "harvestbot-kms-member" {
+  project = "${var.gcloud_project_id}"
+  role    = "roles/cloudkms.cryptoKeyEncrypterDecrypter"
+  member  = "serviceAccount:${var.gcloud_service_account_email}"
+}
