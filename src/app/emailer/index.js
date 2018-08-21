@@ -3,7 +3,7 @@ import sgMail from '@sendgrid/mail';
 
 export default (config) => {
   // TODO: error handling
-  const sendExcelFile = (email, subject, message, filePath, fileName) => {
+  const sendExcelFile = async (email, subject, message, filePath, fileName) => {
     sgMail.setApiKey(config.sendGridApiKey);
     const excelFile = readFileSync(filePath);
     const msg = {
@@ -18,7 +18,7 @@ export default (config) => {
         disposition: 'attachment',
       }],
     };
-    sgMail.send(msg);
+    return sgMail.send(msg);
   };
 
   return {

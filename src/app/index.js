@@ -1,4 +1,5 @@
 import { tmpdir } from 'os';
+import { unlinkSync } from 'fs';
 
 import logger from '../log';
 
@@ -66,7 +67,13 @@ export default (config, http) => {
   };
 
   // TODO: refactor and optimise
-  const generateReport = async (year, month, email) => {
+  const generateReport = async (
+    yearArg,
+    monthArg,
+    email,
+    year = parseInt(yearArg, 10),
+    month = parseInt(monthArg, 10),
+  ) => {
     const orderValue = (a, b) => (a < b ? -1 : 1);
     const compare = (a, b) => (a === b ? 0 : orderValue(a, b));
 
@@ -108,7 +115,8 @@ export default (config, http) => {
     const filePath = `${tmpdir()}/${fileName}`;
     logger.info(`Writing stats to ${filePath}`);
     excel().writeSheet(rows, filePath, sheetTitle, config.statsColumnHeaders);
-    emailer(config).sendExcelFile(email, 'Monthly harvest stats', `${year}-${month}`, filePath, fileName);
+    await emailer(config).sendExcelFile(email, 'Monthly harvest stats', `${year}-${month}`, filePath, fileName);
+    unlinkSync(filePath);
     return `Stats sent to email ${email}.`;
   };
 

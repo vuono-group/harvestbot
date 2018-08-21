@@ -6,7 +6,13 @@ export default () => {
 
   const uploadSecret = filePath => storage.bucket(secretsBucketName).upload(filePath);
 
-  const downloadSecret = () => {};
+  const downloadSecret = (fileName, destinationPath) =>
+    storage
+      .bucket(secretsBucketName)
+      .file(fileName)
+      .download({
+        destination: destinationPath,
+      });
 
   return {
     uploadSecret,
