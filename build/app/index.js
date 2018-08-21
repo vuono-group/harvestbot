@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _os = require('os');
 
+var _fs = require('fs');
+
 var _log = require('../log');
 
 var _log2 = _interopRequireDefault(_log);
@@ -81,7 +83,7 @@ exports.default = (config, http) => {
   };
 
   // TODO: refactor and optimise
-  const generateReport = async (year, month, email) => {
+  const generateReport = async (yearArg, monthArg, email, year = parseInt(yearArg, 10), month = parseInt(monthArg, 10)) => {
     const orderValue = (a, b) => a < b ? -1 : 1;
     const compare = (a, b) => a === b ? 0 : orderValue(a, b);
 
@@ -114,7 +116,8 @@ exports.default = (config, http) => {
     const filePath = `${(0, _os.tmpdir)()}/${fileName}`;
     _log2.default.info(`Writing stats to ${filePath}`);
     (0, _excel2.default)().writeSheet(rows, filePath, sheetTitle, config.statsColumnHeaders);
-    (0, _emailer2.default)(config).sendExcelFile(email, 'Monthly harvest stats', `${year}-${month}`, filePath, fileName);
+    await (0, _emailer2.default)(config).sendExcelFile(email, 'Monthly harvest stats', `${year}-${month}`, filePath, fileName);
+    (0, _fs.unlinkSync)(filePath);
     return `Stats sent to email ${email}.`;
   };
 

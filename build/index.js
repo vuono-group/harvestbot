@@ -29,6 +29,10 @@ var _http = require('./http');
 
 var _http2 = _interopRequireDefault(_http);
 
+var _settings = require('./settings');
+
+var _settings2 = _interopRequireDefault(_settings);
+
 var _slack = require('./slack');
 
 var _slack2 = _interopRequireDefault(_slack);
@@ -37,40 +41,20 @@ var _verifier = require('./verifier');
 
 var _verifier2 = _interopRequireDefault(_verifier);
 
-var _defaults = require('./defaults');
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-const validateEnv = () => {
-  const getEnvParam = param => process.env[param] ? process.env[param] : _log2.default.error(`Environment variable ${param} missing.`);
-  const ignoreTaskIds = getEnvParam('IGNORE_FROM_FLEX_TASK_IDS');
-  const emailDomains = getEnvParam('ALLOWED_EMAIL_DOMAINS');
-  const columnHeaders = getEnvParam('STATS_COLUMN_HEADERS');
-  const config = {
-    ignoreTaskIds: ignoreTaskIds ? ignoreTaskIds.split(',').map(id => parseInt(id, 10)) : [],
-    emailDomains: emailDomains ? emailDomains.split(',') : [],
-    projectId: getEnvParam('GCLOUD_PROJECT'),
-    harvestAccessToken: getEnvParam('HARVEST_ACCESS_TOKEN'),
-    harvestAccountId: getEnvParam('HARVEST_ACCOUNT_ID'),
-    slackBotToken: getEnvParam('SLACK_BOT_TOKEN'),
-    slackSigningSecret: getEnvParam('SLACK_SIGNING_SECRET'),
-    notifyChannelId: getEnvParam('SLACK_NOTIFY_CHANNEL_ID'),
-    currentTime: new Date().getTime() / 1000,
-    statsColumnHeaders: columnHeaders ? columnHeaders.split(',') : _defaults.DEFAULT_COLUMN_HEADERS,
-    sendGridApiKey: getEnvParam('SENDGRID_API_KEY'),
-    taskIds: {
-      publicHoliday: parseInt(getEnvParam('TASK_ID_PUBLIC_HOLIDAY'), 10),
-      vacation: parseInt(getEnvParam('TASK_ID_VACATION'), 10),
-      unpaidLeave: parseInt(getEnvParam('TASK_ID_UNPAID_LEAVE'), 10),
-      sickLeave: parseInt(getEnvParam('TASK_ID_SICK_LEAVE'), 10),
-      flexLeave: parseInt(getEnvParam('TASK_ID_FLEX_LEAVE'), 10)
-    }
-  };
-  return config;
+let appConfig = null;
+
+const getAppConfig = async () => {
+  if (appConfig) {
+    return appConfig;
+  }
+  appConfig = await (0, _settings2.default)().getConfig();
+  return appConfig;
 };
 
 const initFlextime = exports.initFlextime = async (req, res) => {
-  const config = validateEnv();
+  const config = await getAppConfig();
   if ((0, _verifier2.default)(config).verifySlackRequest(req)) {
     if (req.body.text === 'help') {
       return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
@@ -78,8 +62,8 @@ const initFlextime = exports.initFlextime = async (req, res) => {
     const cmdParts = req.body.text.split(' ');
     if (cmdParts.length > 0 && cmdParts[0] === 'stats') {
       const currentDate = new Date();
-      const year = cmdParts.length > 1 ? parseInt(cmdParts[1], 10) : currentDate.getFullYear();
-      const month = cmdParts.length > 2 ? parseInt(cmdParts[2], 10) : currentDate.getMonth() + 1;
+      const year = cmdParts.length > 1 ? cmdParts[1] : currentDate.getFullYear();
+      const month = cmdParts.length > 2 ? cmdParts[2] : currentDate.getMonth() + 1;
       await (0, _queue2.default)(config).enqueueStatsRequest({
         userId: req.body.user_id, responseUrl: req.body.response_url, year, month
       });
@@ -92,7 +76,7 @@ const initFlextime = exports.initFlextime = async (req, res) => {
 };
 
 const calcFlextime = exports.calcFlextime = async message => {
-  const config = validateEnv();
+  const config = await getAppConfig();
   const request = JSON.parse(Buffer.from(message.data, 'base64').toString());
   const slack = (0, _slack2.default)(config, _http2.default, request.responseUrl);
   const { userId } = request;
@@ -118,7 +102,7 @@ const calcFlextime = exports.calcFlextime = async message => {
 };
 
 const notifyUsers = exports.notifyUsers = async (req, res) => {
-  const config = validateEnv();
+  const config = await getAppConfig();
   if ((0, _verifier2.default)(config).verifySlackRequest(req)) {
     const store = (0, _db2.default)(config);
     const msgQueue = (0, _queue2.default)(config);
@@ -136,7 +120,7 @@ const notifyUsers = exports.notifyUsers = async (req, res) => {
 };
 
 const calcStats = exports.calcStats = async message => {
-  const config = validateEnv();
+  const config = await getAppConfig();
   const request = JSON.parse(Buffer.from(message.data, 'base64').toString());
   const slack = (0, _slack2.default)(config, _http2.default, request.responseUrl);
   const { userId, year, month } = request;
@@ -156,4 +140,9 @@ const calcStats = exports.calcStats = async message => {
   return _log2.default.error('Cannot find Slack user id');
 };
 
-(0, _cli2.default)(validateEnv(), _http2.default).start();
+if (!process.env.FUNCTION_NAME) {
+  (async () => {
+    const config = await getAppConfig();
+    (0, _cli2.default)(config, _http2.default).start();
+  })();
+}

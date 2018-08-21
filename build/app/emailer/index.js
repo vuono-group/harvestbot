@@ -14,7 +14,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 exports.default = config => {
   // TODO: error handling
-  const sendExcelFile = (email, subject, message, filePath, fileName) => {
+  const sendExcelFile = async (email, subject, message, filePath, fileName) => {
     _mail2.default.setApiKey(config.sendGridApiKey);
     const excelFile = (0, _fs.readFileSync)(filePath);
     const msg = {
@@ -29,7 +29,7 @@ exports.default = config => {
         disposition: 'attachment'
       }]
     };
-    _mail2.default.send(msg);
+    return _mail2.default.send(msg);
   };
 
   return {
