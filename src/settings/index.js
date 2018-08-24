@@ -1,12 +1,15 @@
-import logger from '../log';
+import log from '../log';
 import { DEFAULT_COLUMN_HEADERS } from './defaults';
 import decrypter from '../cloud/key-ring';
 
 export default () => {
+  const cloudConfig = { cloudEnv: !process.env.FUNCTION_NAME };
+  const logger = log(cloudConfig);
   const getEnvParam = param => (process.env[param]
     ? process.env[param]
     : logger.error(`Environment variable ${param} missing.`));
   const baseConfig = {
+    ...cloudConfig,
     projectId: getEnvParam('GCLOUD_PROJECT'),
     region: getEnvParam('FUNCTION_REGION'),
   };

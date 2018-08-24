@@ -1,7 +1,7 @@
 import { tmpdir } from 'os';
 import { unlinkSync } from 'fs';
 
-import logger from '../log';
+import log from '../log';
 
 import analyze from './analyzer';
 import excel from './excel';
@@ -10,6 +10,7 @@ import harvest from './harvest';
 import emailer from './emailer';
 
 export default (config, http) => {
+  const logger = log(config);
   const formatDate = date => date.toLocaleDateString(
     'en-US',
     {

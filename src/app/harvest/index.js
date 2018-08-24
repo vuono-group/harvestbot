@@ -5,8 +5,6 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/mergeMap';
 import 'rxjs/add/operator/reduce';
 
-// import logger from './log';
-
 export default (config, http) => {
   const api = http(
     'https://api.harvestapp.com/v2/',

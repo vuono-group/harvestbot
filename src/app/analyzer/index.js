@@ -1,5 +1,4 @@
 import cal from '../calendar';
-// import logger from '../log';
 
 export default ({ ignoreTaskIds, taskIds }) => {
   const calendar = cal();

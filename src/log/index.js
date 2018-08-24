@@ -1,23 +1,27 @@
 import winston from 'winston';
 import { LoggingWinston } from '@google-cloud/logging-winston';
 
-const { Console } = winston.transports;
+export default (config) => {
+  const { Console } = winston.transports;
 
-const transports = {
-  default: [
-    new LoggingWinston(),
-    new Console({ json: false, timestamp: true, colorize: true }),
-  ],
+  const transports = {
+    default: [
+      ...(config.cloudEnv ? [new LoggingWinston()] : []),
+      new Console({ json: false, timestamp: true, colorize: true }),
+    ],
+  };
+
+  const exceptionHandlers = {
+    default: [new Console({ json: false, timestamp: true, colorize: true })],
+  };
+
+  const loggingConfig = {
+    transports: transports.default,
+    exceptionHandlers: exceptionHandlers.default,
+    exitOnError: true,
+  };
+
+  const logger = new winston.Logger(loggingConfig);
+
+  return logger;
 };
-
-const exceptionHandlers = {
-  default: [new Console({ json: false, timestamp: true, colorize: true })],
-};
-
-const config = {
-  transports: transports.default,
-  exceptionHandlers: exceptionHandlers.default,
-  exitOnError: true,
-};
-
-export default new winston.Logger(config);

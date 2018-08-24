@@ -1,7 +1,8 @@
 import crypto from 'crypto';
-import logger from '../log';
+import log from '../log';
 
 export default (config) => {
+  const logger = log(config);
   const REQUEST_MAX_AGE_SECS = 5 * 60;
 
   const timestampWithinRange = timestamp =>

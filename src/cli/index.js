@@ -1,12 +1,15 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import program from 'commander';
 import configuration from 'config';
+/* eslint-enable import/no-extraneous-dependencies */
 
 import application from '../app';
-import logger from '../log';
+import log from '../log';
 import encrypter from '../cloud/key-ring';
 import { version } from '../../package.json';
 
 export default (config, http) => {
+  const logger = log(config);
   const app = application(config, http);
   const { encryptSecret } = encrypter(config);
 
