@@ -2,7 +2,7 @@
 
 NOTIFY_TIMESTAMP=$(date -u +%s)
 NOTIFY_PAYLOAD="type=cron"
-NOTIFY_HMAC=$(echo -n v0:$NOTIFY_TIMESTAMP:$NOTIFY_PAYLOAD | openssl dgst -sha256 -hex -hmac "$SLACK_SIGNING_SECRET")
+NOTIFY_HMAC=$(echo -n v0:$NOTIFY_TIMESTAMP:$NOTIFY_PAYLOAD | openssl dgst -sha256 -hex -hmac "$SLACK_SIGNING_SECRET" | sed 's/^.* //')
 
 curl -X POST \
   -d $NOTIFY_PAYLOAD \
