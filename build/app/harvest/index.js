@@ -16,8 +16,6 @@ require('rxjs/add/operator/mergeMap');
 
 require('rxjs/add/operator/reduce');
 
-// import logger from './log';
-
 exports.default = (config, http) => {
   const api = http('https://api.harvestapp.com/v2/', {
     Authorization: `Bearer ${config.harvestAccessToken}`,

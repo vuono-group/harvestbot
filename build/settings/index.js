@@ -19,8 +19,11 @@ var _keyRing2 = _interopRequireDefault(_keyRing);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = () => {
-  const getEnvParam = param => process.env[param] ? process.env[param] : _log2.default.error(`Environment variable ${param} missing.`);
+  const inGoogleCloud = !process.env.FUNCTION_NAME;
+  const logger = (0, _log2.default)({ inGoogleCloud });
+  const getEnvParam = param => process.env[param] ? process.env[param] : logger.error(`Environment variable ${param} missing.`);
   const baseConfig = {
+    inGoogleCloud,
     projectId: getEnvParam('GCLOUD_PROJECT'),
     region: getEnvParam('FUNCTION_REGION')
   };
@@ -30,7 +33,6 @@ exports.default = () => {
     const secretConfigString = await decryptSecret();
     const secretConfig = JSON.parse(secretConfigString);
     return _extends({}, baseConfig, secretConfig, {
-      ignoreTaskIds: secretConfig.ignoreTaskIds ? secretConfig.ignoreTaskIds.split(',').map(id => parseInt(id, 10)) : [],
       emailDomains: secretConfig.emailDomains ? secretConfig.emailDomains.split(',') : [],
       statsColumnHeaders: secretConfig.statsColumnHeaders ? secretConfig.statsColumnHeaders.split(',') : _defaults.DEFAULT_COLUMN_HEADERS,
       taskIds: {

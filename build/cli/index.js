@@ -28,25 +28,29 @@ var _package = require('../../package.json');
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+/* eslint-enable import/no-extraneous-dependencies */
+
+/* eslint-disable import/no-extraneous-dependencies */
 exports.default = (config, http) => {
+  const logger = (0, _log2.default)(config);
   const app = (0, _app2.default)(config, http);
   const { encryptSecret } = (0, _keyRing2.default)(config);
 
   const printResponse = (header, msgs) => {
-    _log2.default.info(header);
+    logger.info(header);
     if (msgs) {
-      msgs.forEach(msg => _log2.default.info(msg));
+      msgs.forEach(msg => logger.info(msg));
     }
   };
 
   const generateStats = async (email, year, month) => {
-    _log2.default.info(`Generating stats for ${year}-${month}`);
+    logger.info(`Generating stats for ${year}-${month}`);
     await app.generateReport(year, month, email);
-    _log2.default.info(`Sent report to ${email}`);
+    logger.info(`Sent report to ${email}`);
   };
 
   const calcFlexTime = async email => {
-    _log2.default.info(`Calculating flextime for ${email}`);
+    logger.info(`Calculating flextime for ${email}`);
     const data = await app.calcFlextime(email);
     printResponse(data.header, data.messages);
   };

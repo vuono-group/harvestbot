@@ -10,8 +10,6 @@ var _publicHolidays2 = _interopRequireDefault(_publicHolidays);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-// import logger from '../log';
-
 exports.default = () => {
   const HOURS_IN_DAY = 7.5;
 

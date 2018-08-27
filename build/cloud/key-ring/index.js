@@ -20,7 +20,13 @@ var _storage2 = _interopRequireDefault(_storage);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-exports.default = ({ projectId, region }) => {
+function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
+
+exports.default = (_ref) => {
+  let { projectId, region } = _ref,
+      config = _objectWithoutProperties(_ref, ['projectId', 'region']);
+
+  const logger = (0, _log2.default)(config);
   const fileName = 'harvestbot-config.encrypted';
   const localFilePath = `${(0, _os.tmpdir)()}/${fileName}`;
   const secretStorage = (0, _storage2.default)();
@@ -36,7 +42,7 @@ exports.default = ({ projectId, region }) => {
         auth: authClient
       });
     }
-    _log2.default.error('Unable to create cloudkms service.');
+    logger.error('Unable to create cloudkms service.');
     return null;
   };
 
@@ -53,13 +59,13 @@ exports.default = ({ projectId, region }) => {
         const response = await cloudkms.projects.locations.keyRings.cryptoKeys.encrypt(request);
         if (response) {
           (0, _fs.writeFileSync)(localFilePath, Buffer.from(response.data.ciphertext, 'base64'));
-          _log2.default.info(`Written encrypted config to file: ${localFilePath}`);
+          logger.info(`Written encrypted config to file: ${localFilePath}`);
           await secretStorage.uploadSecret(localFilePath);
-          _log2.default.info('Uploaded encrypted file to storage.');
+          logger.info('Uploaded encrypted file to storage.');
           return localFilePath;
         }
       } catch (error) {
-        _log2.default.error(`Error in file encryption: ${error}`);
+        logger.error(`Error in file encryption: ${error}`);
       }
     }
     return null;
@@ -81,7 +87,7 @@ exports.default = ({ projectId, region }) => {
         const response = await cloudkms.projects.locations.keyRings.cryptoKeys.decrypt(request);
         return Buffer.from(response.data.plaintext, 'base64');
       } catch (error) {
-        _log2.default.error(`Error in file decryption: ${error}`);
+        logger.error(`Error in file decryption: ${error}`);
       }
     }
     return null;

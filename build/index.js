@@ -9,10 +9,6 @@ var _app = require('./app');
 
 var _app2 = _interopRequireDefault(_app);
 
-var _cli = require('./cli');
-
-var _cli2 = _interopRequireDefault(_cli);
-
 var _log = require('./log');
 
 var _log2 = _interopRequireDefault(_log);
@@ -43,6 +39,7 @@ var _verifier2 = _interopRequireDefault(_verifier);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+let logger = null;
 let appConfig = null;
 
 const getAppConfig = async () => {
@@ -50,6 +47,7 @@ const getAppConfig = async () => {
     return appConfig;
   }
   appConfig = await (0, _settings2.default)().getConfig();
+  logger = (0, _log2.default)(appConfig);
   return appConfig;
 };
 
@@ -82,7 +80,7 @@ const calcFlextime = exports.calcFlextime = async message => {
   const { userId } = request;
 
   if (userId) {
-    _log2.default.info(`Fetching data for user id ${userId}`);
+    logger.info(`Fetching data for user id ${userId}`);
     const email = request.email || (await slack.getUserEmailForId(userId));
     if (!email) {
       return slack.postMessage(userId, 'Cannot find email for Slack user id');
@@ -91,14 +89,14 @@ const calcFlextime = exports.calcFlextime = async message => {
       await slack.postMessage(userId, `Fetching time entries for email ${email}`);
     }
     await (0, _db2.default)(config).storeUserData(userId, email);
-    _log2.default.info('User data stored');
+    logger.info('User data stored');
 
     const data = await (0, _app2.default)(config, _http2.default).calcFlextime(email);
-    _log2.default.info('Flextime calculated');
+    logger.info('Flextime calculated');
 
     return slack.postMessage(userId, data.header, data.messages);
   }
-  return _log2.default.error('Cannot find Slack user id');
+  return logger.error('Cannot find Slack user id');
 };
 
 const notifyUsers = exports.notifyUsers = async (req, res) => {
@@ -108,10 +106,10 @@ const notifyUsers = exports.notifyUsers = async (req, res) => {
     const msgQueue = (0, _queue2.default)(config);
 
     const users = await store.fetchUsers;
-    _log2.default.info(`Found ${users.length} users`);
+    logger.info(`Found ${users.length} users`);
 
     await Promise.all(users.map(async ({ email, id }) => {
-      _log2.default.info(`Notify ${email}`);
+      logger.info(`Notify ${email}`);
       return msgQueue.enqueueFlexTimeRequest({ userId: id, email });
     }));
     return res.json({ text: 'ok' });
@@ -126,23 +124,16 @@ const calcStats = exports.calcStats = async message => {
   const { userId, year, month } = request;
 
   if (userId) {
-    _log2.default.info(`Calculating stats requested by user ${userId}`);
+    logger.info(`Calculating stats requested by user ${userId}`);
     const email = await slack.getUserEmailForId(userId); // TODO: need slack admin role?
     if (!email) {
       return slack.postMessage(userId, 'Cannot find email for Slack user id');
     }
 
     const result = await (0, _app2.default)(config, _http2.default).generateReport(year, month, email);
-    _log2.default.info('Stats generated');
+    logger.info('Stats generated');
 
     return slack.postMessage(userId, result);
   }
-  return _log2.default.error('Cannot find Slack user id');
+  return logger.error('Cannot find Slack user id');
 };
-
-if (!process.env.FUNCTION_NAME) {
-  (async () => {
-    const config = await getAppConfig();
-    (0, _cli2.default)(config, _http2.default).start();
-  })();
-}

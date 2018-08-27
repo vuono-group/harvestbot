@@ -35,6 +35,7 @@ var _emailer2 = _interopRequireDefault(_emailer);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 exports.default = (config, http) => {
+  const logger = (0, _log2.default)(config);
   const formatDate = date => date.toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
@@ -51,8 +52,7 @@ exports.default = (config, http) => {
       return { header: `Invalid email domain for ${email}` };
     }
 
-    _log2.default.info(`Ignore following task ids ${config.ignoreTaskIds}`);
-    _log2.default.info(`Fetch data for ${email}`);
+    logger.info(`Fetch data for ${email}`);
 
     const entries = await tracker.getTimeEntriesForEmail(userName, validateEmail);
     if (!entries) {
@@ -61,23 +61,23 @@ exports.default = (config, http) => {
     const latestFullDay = calendar.getLatestFullWorkingDay();
 
     const range = analyzer.getPeriodRange(entries, latestFullDay);
-    _log2.default.info(`Received range starting from ${formatDate(range.start)} to ${formatDate(range.end)}`);
+    logger.info(`Received range starting from ${formatDate(range.start)} to ${formatDate(range.end)}`);
 
     const totalHours = calendar.getTotalWorkHoursSinceDate(range.start, range.end);
-    _log2.default.info(`Total working hours from range start ${totalHours}`);
+    logger.info(`Total working hours from range start ${totalHours}`);
 
     const result = analyzer.calculateWorkedHours(range.entries);
     if (result.warnings.length > 0) {
-      _log2.default.info(result.warnings);
+      logger.info(result.warnings);
     } else {
-      _log2.default.info('No warnings!');
+      logger.info('No warnings!');
     }
 
     const header = `*Your flex hours count: ${round(result.total - totalHours)}*`;
     const messages = [`Latest calendar working day: ${formatDate(range.end)}`, `Last time you have recorded hours: ${formatDate(new Date(range.entries[range.entries.length - 1].date))}`, ...result.warnings, `Current month ${result.billablePercentageCurrentMonth}% billable`];
 
-    _log2.default.info(header);
-    _log2.default.info('All done!');
+    logger.info(header);
+    logger.info('All done!');
 
     return { header, messages };
   };
@@ -114,7 +114,7 @@ exports.default = (config, http) => {
     const sheetTitle = `${year}-${month}`;
     const fileName = `${sheetTitle}-${new Date().getTime()}.xlsx`;
     const filePath = `${(0, _os.tmpdir)()}/${fileName}`;
-    _log2.default.info(`Writing stats to ${filePath}`);
+    logger.info(`Writing stats to ${filePath}`);
     (0, _excel2.default)().writeSheet(rows, filePath, sheetTitle, config.statsColumnHeaders);
     await (0, _emailer2.default)(config).sendExcelFile(email, 'Monthly harvest stats', `${year}-${month}`, filePath, fileName);
     (0, _fs.unlinkSync)(filePath);

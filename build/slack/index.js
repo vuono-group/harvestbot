@@ -8,8 +8,6 @@ var _rxjs = require('rxjs');
 
 require('rxjs/add/operator/mergeMap');
 
-// import logger from './log';
-
 exports.default = (config, http, responseUrl) => {
   const api = http('https://slack.com/api', {
     Authorization: `Bearer ${config.slackBotToken}`
