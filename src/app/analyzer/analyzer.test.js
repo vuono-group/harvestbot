@@ -17,10 +17,6 @@ describe('Analyzer', () => {
     taskId: 'taskId',
     taskName: 'taskName',
   };
-  const mockTask = {
-    user: { first_name: 'first', last_name: 'last' },
-    entries: [mockEntry],
-  };
 
   const mockEntries = [
     mockEntry,
@@ -34,6 +30,11 @@ describe('Analyzer', () => {
       date: '2017-12-24',
     },
   ];
+
+  const mockTask = {
+    user: { first_name: 'first', last_name: 'last' },
+    entries: mockEntries,
+  };
 
   const mockConfig = {
     taskIds: {
@@ -76,17 +77,17 @@ describe('Analyzer', () => {
     it('should get stats', () =>
       expect(getStats(mockTask, 1))
         .toEqual({
-          absentDays: 0,
+          absentDays: 1,
           billableHours: 7.5,
           billablePercentage: 100,
-          days: 1,
-          flexLeaveDays: 0,
-          flexSaldo: 0,
+          days: 2,
+          flexLeaveDays: 1,
+          flexSaldo: -7.5,
           hours: 7.5,
-          hoursPerCalendar: 7.5,
+          hoursPerCalendar: 15,
           name: 'first last',
-          markedDays: 1,
-          missingDays: 0,
+          markedDays: 2,
+          missingDays: 1,
           projectName: 'projectName',
           sickDays: 0,
           unpaidLeaveDays: 0,

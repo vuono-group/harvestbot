@@ -77,7 +77,6 @@ export default ({ taskIds }) => {
     warnings: filtered.warnings,
     total: filtered.total,
     billablePercentageCurrentMonth: getBillablePercentageCurrentMonth(filtered.entries),
-
   });
 
   const addDay = (entry, result) => {
@@ -112,14 +111,22 @@ export default ({ taskIds }) => {
     { user, entries },
     fullCalendarDays,
     recordedHours = entries.reduce(
-      (result, entry) =>
-        ({
-          ...addDay(entry, result),
-          hours: !isHolidayOrFlex(entry.taskId) ? result.hours + entry.hours : result.hours,
-          billableHours: entry.billable ? result.billableHours + entry.hours : result.billableHours,
-          projectNames: entry.billable && !result.projectNames.includes(entry.projectName)
-            ? [...result.projectNames, entry.projectName] : result.projectNames,
-        }),
+      (result, entry) => {
+        if (calendar.isWorkingDay(new Date(entry.date))) {
+          const isWorkingOrSickDay = !isHolidayOrFlex(entry.taskId);
+          const isBillable = isWorkingOrSickDay && entry.billable;
+          const projectNotAdded = isBillable && !result.projectNames.includes(entry.projectName);
+          return {
+            ...addDay(entry, result),
+            hours: isWorkingOrSickDay ? result.hours + entry.hours : result.hours,
+            billableHours: isBillable ? result.billableHours + entry.hours : result.billableHours,
+            projectNames: projectNotAdded
+              ? [...result.projectNames, entry.projectName]
+              : result.projectNames,
+          };
+        }
+        return result;
+      },
       {
         dates: [],
         daysCount: {
