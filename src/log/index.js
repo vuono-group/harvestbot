@@ -1,12 +1,12 @@
 import winston from 'winston';
 import { LoggingWinston } from '@google-cloud/logging-winston';
 
-export default (config) => {
+export default ({ inGoogleCloud }) => {
   const { Console } = winston.transports;
 
   const transports = {
     default: [
-      ...(config.cloudEnv ? [new LoggingWinston()] : []),
+      ...(inGoogleCloud ? [new LoggingWinston()] : []),
       new Console({ json: false, timestamp: true, colorize: true }),
     ],
   };

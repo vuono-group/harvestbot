@@ -1,8 +1,19 @@
 import cal from '../calendar';
 
-export default ({ ignoreTaskIds, taskIds }) => {
+export default ({ taskIds }) => {
   const calendar = cal();
   const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
+
+  const isPublicHoliday = taskId => taskId === taskIds.publicHoliday;
+  const isVacation = taskId => taskId === taskIds.vacation;
+  const isUnpaidLeave = taskId => taskId === taskIds.unpaidLeave;
+  const isFlexLeave = taskId => taskId === taskIds.flexLeave;
+  const isSickLeave = taskId => taskId === taskIds.sickLeave;
+  const isHoliday = taskId => isPublicHoliday(taskId) ||
+    isVacation(taskId) ||
+    isUnpaidLeave(taskId);
+  const isHolidayOrFlex = taskId => isHoliday(taskId) || isFlexLeave(taskId);
+  const isAbsence = taskId => isHolidayOrFlex(taskId) || isSickLeave(taskId);
 
   const getPeriodRangeEnd = (entriesDate, latestFullDate, today = new Date()) =>
     (
@@ -48,7 +59,7 @@ export default ({ ignoreTaskIds, taskIds }) => {
   });
 
   const calculateWorkedHours = entries => entries.reduce((result, entry) => {
-    const ignore = ignoreTaskIds.includes(entry.taskId);
+    const ignore = isPublicHoliday(entry.taskId) || isFlexLeave(entry.taskId);
     return {
       ...result,
       warnings: !ignore && !calendar.isWorkingDay(new Date(entry.date))
@@ -60,17 +71,6 @@ export default ({ ignoreTaskIds, taskIds }) => {
     total: 0,
     billablePercentageCurrentMonth: getBillablePercentageCurrentMonth(entries),
   });
-
-  const isPublicHoliday = taskId => taskId === taskIds.publicHoliday;
-  const isVacation = taskId => taskId === taskIds.vacation;
-  const isUnpaidLeave = taskId => taskId === taskIds.unpaidLeave;
-  const isFlexLeave = taskId => taskId === taskIds.flexLeave;
-  const isSickLeave = taskId => taskId === taskIds.sickLeave;
-  const isHoliday = taskId => isPublicHoliday(taskId) ||
-    isVacation(taskId) ||
-    isUnpaidLeave(taskId);
-  const isHolidayOrFlex = taskId => isHoliday(taskId) || isFlexLeave(taskId);
-  const isAbsence = taskId => isHolidayOrFlex(taskId) || isSickLeave(taskId);
 
   const addDay = (entry, result) => {
     const {

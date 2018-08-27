@@ -31,7 +31,6 @@ export default (config, http) => {
       return { header: `Invalid email domain for ${email}` };
     }
 
-    logger.info(`Ignore following task ids ${config.ignoreTaskIds}`);
     logger.info(`Fetch data for ${email}`);
 
     const entries = await tracker.getTimeEntriesForEmail(userName, validateEmail);

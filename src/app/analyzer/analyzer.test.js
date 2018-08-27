@@ -1,26 +1,35 @@
 import analyzer from './index';
 
 describe('Analyzer', () => {
-  const mockEntries = [
+  const mockDates = [
     { date: '2017-12-07' },
     { date: '2017-06-07' },
     { date: '2017-12-05' },
     { date: '2018-07-20' },
     { date: '2018-05-09' },
   ];
+  const mockEntry = {
+    date: '2018-08-20',
+    hours: 7.5,
+    billable: true,
+    projectId: 'projectId',
+    projectName: 'projectName',
+    taskId: 'taskId',
+    taskName: 'taskName',
+  };
   const mockTask = {
     user: { first_name: 'first', last_name: 'last' },
-    entries: [
-      {
-        date: '2017-02-12',
-        hours: 7.5,
-        billable: true,
-        projectId: 'projectId',
-        projectName: 'projectName',
-        taskId: 'taskId',
-        taskName: 'taskName',
-      }],
+    entries: [mockEntry],
   };
+
+  const mockEntries = [
+    mockEntry,
+    {
+      ...mockEntry,
+      date: '2018-08-27',
+      taskId: 'flexLeaveTaskId',
+    },
+  ];
 
   const mockConfig = {
     taskIds: {
@@ -28,16 +37,16 @@ describe('Analyzer', () => {
       vacation: '',
       unpaidLeave: '',
       sickLeave: '',
-      flexLeave: '',
+      flexLeave: 'flexLeaveTaskId',
     },
   };
 
 
-  const { getPeriodRange, getStats } = analyzer(mockConfig);
+  const { calculateWorkedHours, getPeriodRange, getStats } = analyzer(mockConfig);
 
   describe('getPeriodRange', () => {
     it('should get start and end dates', () =>
-      expect(getPeriodRange(mockEntries, new Date('2018-07-20')))
+      expect(getPeriodRange(mockDates, new Date('2018-07-20')))
         .toEqual({
           start: new Date('2017-06-07'),
           end: new Date('2018-07-20'),
@@ -48,6 +57,15 @@ describe('Analyzer', () => {
             { date: '2018-05-09' },
             { date: '2018-07-20' },
           ],
+        }));
+  });
+  describe('calculateWorkedHours', () => {
+    it('should calculate worked hours', () =>
+      expect(calculateWorkedHours(mockEntries))
+        .toEqual({
+          billablePercentageCurrentMonth: 100,
+          total: 7.5,
+          warnings: [],
         }));
   });
   describe('getStats', () => {
