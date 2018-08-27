@@ -1,12 +1,15 @@
-import logger from '../log';
+import log from '../log';
 import { DEFAULT_COLUMN_HEADERS } from './defaults';
 import decrypter from '../cloud/key-ring';
 
 export default () => {
+  const inGoogleCloud = !process.env.FUNCTION_NAME;
+  const logger = log({ inGoogleCloud });
   const getEnvParam = param => (process.env[param]
     ? process.env[param]
     : logger.error(`Environment variable ${param} missing.`));
   const baseConfig = {
+    inGoogleCloud,
     projectId: getEnvParam('GCLOUD_PROJECT'),
     region: getEnvParam('FUNCTION_REGION'),
   };
@@ -18,9 +21,6 @@ export default () => {
     return {
       ...baseConfig,
       ...secretConfig,
-      ignoreTaskIds: secretConfig.ignoreTaskIds
-        ? secretConfig.ignoreTaskIds.split(',').map(id => parseInt(id, 10))
-        : [],
       emailDomains: secretConfig.emailDomains
         ? secretConfig.emailDomains.split(',')
         : [],

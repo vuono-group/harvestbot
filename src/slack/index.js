@@ -1,8 +1,6 @@
 import { Observable } from 'rxjs';
 import 'rxjs/add/operator/mergeMap';
 
-// import logger from './log';
-
 export default (config, http, responseUrl) => {
   const api = http(
     'https://slack.com/api',

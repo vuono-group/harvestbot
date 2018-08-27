@@ -2,10 +2,11 @@ import { google } from 'googleapis';
 import { readFileSync, writeFileSync, unlinkSync } from 'fs';
 import { tmpdir } from 'os';
 
-import logger from '../../log';
+import log from '../../log';
 import storage from '../storage';
 
-export default ({ projectId, region }) => {
+export default ({ projectId, region, ...config }) => {
+  const logger = log(config);
   const fileName = 'harvestbot-config.encrypted';
   const localFilePath = `${tmpdir()}/${fileName}`;
   const secretStorage = storage();

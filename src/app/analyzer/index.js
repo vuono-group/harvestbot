@@ -1,9 +1,19 @@
 import cal from '../calendar';
-// import logger from '../log';
 
-export default ({ ignoreTaskIds, taskIds }) => {
+export default ({ taskIds }) => {
   const calendar = cal();
   const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
+
+  const isPublicHoliday = taskId => taskId === taskIds.publicHoliday;
+  const isVacation = taskId => taskId === taskIds.vacation;
+  const isUnpaidLeave = taskId => taskId === taskIds.unpaidLeave;
+  const isFlexLeave = taskId => taskId === taskIds.flexLeave;
+  const isSickLeave = taskId => taskId === taskIds.sickLeave;
+  const isHoliday = taskId => isPublicHoliday(taskId) ||
+    isVacation(taskId) ||
+    isUnpaidLeave(taskId);
+  const isHolidayOrFlex = taskId => isHoliday(taskId) || isFlexLeave(taskId);
+  const isAbsence = taskId => isHolidayOrFlex(taskId) || isSickLeave(taskId);
 
   const getPeriodRangeEnd = (entriesDate, latestFullDate, today = new Date()) =>
     (
@@ -48,30 +58,26 @@ export default ({ ignoreTaskIds, taskIds }) => {
     end: endDate, // today or last calendar working day
   });
 
-  const calculateWorkedHours = entries => entries.reduce((result, entry) => {
-    const ignore = ignoreTaskIds.includes(entry.taskId);
+  const calculateWorkedHours = (entries, filtered = entries.reduce((result, entry) => {
+    const isWorkingDay = calendar.isWorkingDay(new Date(entry.date));
+    const ignoreEntry = isPublicHoliday(entry.taskId) || isFlexLeave(entry.taskId);
+    const ignoreFromTotal = !isWorkingDay || ignoreEntry;
     return {
       ...result,
-      warnings: !ignore && !calendar.isWorkingDay(new Date(entry.date))
-        ? [...result.warnings, `Recorded hours in non-working day (${entry.date})!`] : result.warnings,
-      total: ignore ? result.total : result.total + entry.hours,
+      entries: ignoreFromTotal ? result.entries : [...result.entries, entry],
+      warnings: !ignoreEntry && !isWorkingDay
+        ? [...result.warnings, `Recorded hours in non-working day (${entry.date}) - ignoring!`] : result.warnings,
+      total: ignoreFromTotal ? result.total : result.total + entry.hours,
     };
   }, {
+    entries: [],
     warnings: [],
     total: 0,
-    billablePercentageCurrentMonth: getBillablePercentageCurrentMonth(entries),
+  })) => ({
+    warnings: filtered.warnings,
+    total: filtered.total,
+    billablePercentageCurrentMonth: getBillablePercentageCurrentMonth(filtered.entries),
   });
-
-  const isPublicHoliday = taskId => taskId === taskIds.publicHoliday;
-  const isVacation = taskId => taskId === taskIds.vacation;
-  const isUnpaidLeave = taskId => taskId === taskIds.unpaidLeave;
-  const isFlexLeave = taskId => taskId === taskIds.flexLeave;
-  const isSickLeave = taskId => taskId === taskIds.sickLeave;
-  const isHoliday = taskId => isPublicHoliday(taskId) ||
-    isVacation(taskId) ||
-    isUnpaidLeave(taskId);
-  const isHolidayOrFlex = taskId => isHoliday(taskId) || isFlexLeave(taskId);
-  const isAbsence = taskId => isHolidayOrFlex(taskId) || isSickLeave(taskId);
 
   const addDay = (entry, result) => {
     const {
@@ -105,14 +111,22 @@ export default ({ ignoreTaskIds, taskIds }) => {
     { user, entries },
     fullCalendarDays,
     recordedHours = entries.reduce(
-      (result, entry) =>
-        ({
-          ...addDay(entry, result),
-          hours: !isHolidayOrFlex(entry.taskId) ? result.hours + entry.hours : result.hours,
-          billableHours: entry.billable ? result.billableHours + entry.hours : result.billableHours,
-          projectNames: entry.billable && !result.projectNames.includes(entry.projectName)
-            ? [...result.projectNames, entry.projectName] : result.projectNames,
-        }),
+      (result, entry) => {
+        if (calendar.isWorkingDay(new Date(entry.date))) {
+          const isWorkingOrSickDay = !isHolidayOrFlex(entry.taskId);
+          const isBillable = isWorkingOrSickDay && entry.billable;
+          const projectNotAdded = isBillable && !result.projectNames.includes(entry.projectName);
+          return {
+            ...addDay(entry, result),
+            hours: isWorkingOrSickDay ? result.hours + entry.hours : result.hours,
+            billableHours: isBillable ? result.billableHours + entry.hours : result.billableHours,
+            projectNames: projectNotAdded
+              ? [...result.projectNames, entry.projectName]
+              : result.projectNames,
+          };
+        }
+        return result;
+      },
       {
         dates: [],
         daysCount: {

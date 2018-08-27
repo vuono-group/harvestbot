@@ -1,5 +1,4 @@
 import publicHolidays from './public-holidays';
-// import logger from '../log';
 
 export default () => {
   const HOURS_IN_DAY = 7.5;

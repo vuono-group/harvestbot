@@ -1,6 +1,5 @@
 import application from './app';
-import cli from './cli';
-import logger from './log';
+import log from './log';
 import db from './cloud/db';
 import queue from './cloud/queue';
 import http from './http';
@@ -8,6 +7,7 @@ import settings from './settings';
 import slackApi from './slack';
 import verifier from './verifier';
 
+let logger = null;
 let appConfig = null;
 
 const getAppConfig = async () => {
@@ -15,6 +15,7 @@ const getAppConfig = async () => {
     return appConfig;
   }
   appConfig = await settings().getConfig();
+  logger = log(appConfig);
   return appConfig;
 };
 
@@ -106,10 +107,3 @@ export const calcStats = async (message) => {
   }
   return logger.error('Cannot find Slack user id');
 };
-
-if (!process.env.FUNCTION_NAME) {
-  (async () => {
-    const config = await getAppConfig();
-    cli(config, http).start();
-  })();
-}

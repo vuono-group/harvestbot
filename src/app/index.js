@@ -1,7 +1,7 @@
 import { tmpdir } from 'os';
 import { unlinkSync } from 'fs';
 
-import logger from '../log';
+import log from '../log';
 
 import analyze from './analyzer';
 import excel from './excel';
@@ -10,6 +10,7 @@ import harvest from './harvest';
 import emailer from './emailer';
 
 export default (config, http) => {
+  const logger = log(config);
   const formatDate = date => date.toLocaleDateString(
     'en-US',
     {
@@ -30,7 +31,6 @@ export default (config, http) => {
       return { header: `Invalid email domain for ${email}` };
     }
 
-    logger.info(`Ignore following task ids ${config.ignoreTaskIds}`);
     logger.info(`Fetch data for ${email}`);
 
     const entries = await tracker.getTimeEntriesForEmail(userName, validateEmail);
