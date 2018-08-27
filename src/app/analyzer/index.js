@@ -58,18 +58,26 @@ export default ({ taskIds }) => {
     end: endDate, // today or last calendar working day
   });
 
-  const calculateWorkedHours = entries => entries.reduce((result, entry) => {
-    const ignore = isPublicHoliday(entry.taskId) || isFlexLeave(entry.taskId);
+  const calculateWorkedHours = (entries, filtered = entries.reduce((result, entry) => {
+    const isWorkingDay = calendar.isWorkingDay(new Date(entry.date));
+    const ignoreEntry = isPublicHoliday(entry.taskId) || isFlexLeave(entry.taskId);
+    const ignoreFromTotal = !isWorkingDay || ignoreEntry;
     return {
       ...result,
-      warnings: !ignore && !calendar.isWorkingDay(new Date(entry.date))
-        ? [...result.warnings, `Recorded hours in non-working day (${entry.date})!`] : result.warnings,
-      total: ignore ? result.total : result.total + entry.hours,
+      entries: ignoreFromTotal ? result.entries : [...result.entries, entry],
+      warnings: !ignoreEntry && !isWorkingDay
+        ? [...result.warnings, `Recorded hours in non-working day (${entry.date}) - ignoring!`] : result.warnings,
+      total: ignoreFromTotal ? result.total : result.total + entry.hours,
     };
   }, {
+    entries: [],
     warnings: [],
     total: 0,
-    billablePercentageCurrentMonth: getBillablePercentageCurrentMonth(entries),
+  })) => ({
+    warnings: filtered.warnings,
+    total: filtered.total,
+    billablePercentageCurrentMonth: getBillablePercentageCurrentMonth(filtered.entries),
+
   });
 
   const addDay = (entry, result) => {

@@ -29,6 +29,10 @@ describe('Analyzer', () => {
       date: '2018-08-27',
       taskId: 'flexLeaveTaskId',
     },
+    {
+      ...mockEntry,
+      date: '2017-12-24',
+    },
   ];
 
   const mockConfig = {
@@ -65,7 +69,7 @@ describe('Analyzer', () => {
         .toEqual({
           billablePercentageCurrentMonth: 100,
           total: 7.5,
-          warnings: [],
+          warnings: ['Recorded hours in non-working day (2017-12-24) - ignoring!'],
         }));
   });
   describe('getStats', () => {
