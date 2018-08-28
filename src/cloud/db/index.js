@@ -6,18 +6,17 @@ export default (config) => {
     projectId: config.projectId,
   });
 
-  const storeUserData = (id, email) =>
-    datastore.save({
-      key: datastore.key([userKind, id]),
-      data: {
-        id,
-        email,
-      },
-    });
+  const storeUserData = (id, email) => datastore.save({
+    key: datastore.key([userKind, id]),
+    data: {
+      id,
+      email,
+    },
+  });
 
-  const fetchUsers = new Promise(resolve =>
-    datastore.runQuery(datastore.createQuery(userKind)).then(res =>
-      resolve(res[0])));
+  const fetchUsers = new Promise(
+    resolve => datastore.runQuery(datastore.createQuery(userKind)).then(res => resolve(res[0])),
+  );
 
   return { storeUserData, fetchUsers };
 };

@@ -5,8 +5,7 @@ export default (config) => {
   const logger = log(config);
   const REQUEST_MAX_AGE_SECS = 5 * 60;
 
-  const timestampWithinRange = timestamp =>
-    (config.currentTime - timestamp) < REQUEST_MAX_AGE_SECS;
+  const timestampWithinRange = timestamp => (config.currentTime - timestamp) < REQUEST_MAX_AGE_SECS;
 
   const signatureOk = (rawBody, timestamp, signature) => {
     const data = `v0:${timestamp}:${rawBody}`;

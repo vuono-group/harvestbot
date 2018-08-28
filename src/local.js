@@ -7,4 +7,3 @@ import settings from './settings';
   const config = await settings().getConfig();
   cli(config, http).start();
 })();
-

@@ -50,48 +50,45 @@ describe('Analyzer', () => {
   const { calculateWorkedHours, getPeriodRange, getStats } = analyzer(mockConfig);
 
   describe('getPeriodRange', () => {
-    it('should get start and end dates', () =>
-      expect(getPeriodRange(mockDates, new Date('2018-07-20')))
-        .toEqual({
-          start: new Date('2017-06-07'),
-          end: new Date('2018-07-20'),
-          entries: [
-            { date: '2017-06-07' },
-            { date: '2017-12-05' },
-            { date: '2017-12-07' },
-            { date: '2018-05-09' },
-            { date: '2018-07-20' },
-          ],
-        }));
+    it('should get start and end dates', () => expect(getPeriodRange(mockDates, new Date('2018-07-20')))
+      .toEqual({
+        start: new Date('2017-06-07'),
+        end: new Date('2018-07-20'),
+        entries: [
+          { date: '2017-06-07' },
+          { date: '2017-12-05' },
+          { date: '2017-12-07' },
+          { date: '2018-05-09' },
+          { date: '2018-07-20' },
+        ],
+      }));
   });
   describe('calculateWorkedHours', () => {
-    it('should calculate worked hours', () =>
-      expect(calculateWorkedHours(mockEntries))
-        .toEqual({
-          billablePercentageCurrentMonth: 100,
-          total: 7.5,
-          warnings: ['Recorded hours in non-working day (2017-12-24) - ignoring!'],
-        }));
+    it('should calculate worked hours', () => expect(calculateWorkedHours(mockEntries))
+      .toEqual({
+        billablePercentageCurrentMonth: 100,
+        total: 7.5,
+        warnings: ['Recorded hours in non-working day (2017-12-24) - ignoring!'],
+      }));
   });
   describe('getStats', () => {
-    it('should get stats', () =>
-      expect(getStats(mockTask, 1))
-        .toEqual({
-          absentDays: 1,
-          billableHours: 7.5,
-          billablePercentage: 100,
-          days: 2,
-          flexLeaveDays: 1,
-          flexSaldo: -7.5,
-          hours: 7.5,
-          hoursPerCalendar: 15,
-          name: 'first last',
-          markedDays: 2,
-          missingDays: 1,
-          projectName: 'projectName',
-          sickDays: 0,
-          unpaidLeaveDays: 0,
-          vacationDays: 0,
-        }));
+    it('should get stats', () => expect(getStats(mockTask, 1))
+      .toEqual({
+        absentDays: 1,
+        billableHours: 7.5,
+        billablePercentage: 100,
+        days: 2,
+        flexLeaveDays: 1,
+        flexSaldo: -7.5,
+        hours: 7.5,
+        hoursPerCalendar: 15,
+        name: 'first last',
+        markedDays: 2,
+        missingDays: 1,
+        projectName: 'projectName',
+        sickDays: 0,
+        unpaidLeaveDays: 0,
+        vacationDays: 0,
+      }));
   });
 });
