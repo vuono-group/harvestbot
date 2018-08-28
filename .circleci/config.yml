@@ -42,7 +42,8 @@ jobs:
       - run: |
           git config --global user.email "circleci@harvestbot"
           git config --global user.name "CircleCI"
-          git add -f ./build # Update build output
+          cp ./build ./bin
+          git add ./bin
           if git commit -a -m "[skip ci] Update deployable build output."; then
             git push origin master
             # Trigger deployment with updated build output
