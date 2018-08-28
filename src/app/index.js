@@ -17,8 +17,7 @@ export default (config, http) => {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     },
   );
-  const validateEmail = (email, emailParts = email.split('@')) =>
-    (config.emailDomains.includes(emailParts[1]) ? emailParts[0] : null);
+  const validateEmail = (email, emailParts = email.split('@')) => (config.emailDomains.includes(emailParts[1]) ? emailParts[0] : null);
 
   const analyzer = analyze(config);
   const calendar = cal();
@@ -83,18 +82,21 @@ export default (config, http) => {
     }
 
     const users = await tracker.getUsers();
-    const authorisedUser = users.find(user =>
-      user.is_admin && validateEmail(user.email) === userName);
+    const authorisedUser = users.find(
+      user => user.is_admin && validateEmail(user.email) === userName,
+    );
     if (!authorisedUser) {
       return `Unable to authorise harvest user ${email}`;
     }
 
-    const sortedUsers = users.sort((a, b) =>
-      compare(a.first_name, b.first_name) || compare(a.last_name, b.last_name));
+    const sortedUsers = users.sort(
+      (a, b) => compare(a.first_name, b.first_name) || compare(a.last_name, b.last_name),
+    );
 
     // Find all users who have tracked hours this year to keep the rows consistent
-    const timeEntries = await Promise.all(sortedUsers.map(({ id }) =>
-      tracker.getTimeEntriesForUserId(id, year)));
+    const timeEntries = await Promise.all(
+      sortedUsers.map(({ id }) => tracker.getTimeEntriesForUserId(id, year)),
+    );
     const validEntries = timeEntries
       .map((entries, index) => ({ user: sortedUsers[index], entries }))
       .filter(({ entries }) => entries.length > 0)

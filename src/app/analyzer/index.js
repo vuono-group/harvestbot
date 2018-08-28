@@ -9,18 +9,17 @@ export default ({ taskIds }) => {
   const isUnpaidLeave = taskId => taskId === taskIds.unpaidLeave;
   const isFlexLeave = taskId => taskId === taskIds.flexLeave;
   const isSickLeave = taskId => taskId === taskIds.sickLeave;
-  const isHoliday = taskId => isPublicHoliday(taskId) ||
-    isVacation(taskId) ||
-    isUnpaidLeave(taskId);
+  const isHoliday = taskId => isPublicHoliday(taskId)
+    || isVacation(taskId)
+    || isUnpaidLeave(taskId);
   const isHolidayOrFlex = taskId => isHoliday(taskId) || isFlexLeave(taskId);
   const isAbsence = taskId => isHolidayOrFlex(taskId) || isSickLeave(taskId);
 
-  const getPeriodRangeEnd = (entriesDate, latestFullDate, today = new Date()) =>
-    (
-      calendar.datesEqual(entriesDate, today)
-        ? entriesDate
-        : latestFullDate
-    );
+  const getPeriodRangeEnd = (entriesDate, latestFullDate, today = new Date()) => (
+    calendar.datesEqual(entriesDate, today)
+      ? entriesDate
+      : latestFullDate
+  );
 
   const getPeriodRange = (
     entries,
@@ -31,8 +30,9 @@ export default ({ taskIds }) => {
       latestRecordDate,
       latestFullDate,
     ),
-    sortedRangeEntries = sortedEntries.filter(entry =>
-      new Date(entry.date).getTime() <= endDate.getTime()),
+    sortedRangeEntries = sortedEntries.filter(
+      entry => new Date(entry.date).getTime() <= endDate.getTime(),
+    ),
   ) => ({
     entries: sortedRangeEntries, // sorted entries for range
     start: new Date(sortedEntries[0].date), // start date

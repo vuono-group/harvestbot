@@ -13,13 +13,12 @@ export default (config, http) => {
   const app = application(config, http);
   const { encryptSecret } = encrypter(config);
 
-  const printResponse =
-    (header, msgs) => {
-      logger.info(header);
-      if (msgs) {
-        msgs.forEach(msg => logger.info(msg));
-      }
-    };
+  const printResponse = (header, msgs) => {
+    logger.info(header);
+    if (msgs) {
+      msgs.forEach(msg => logger.info(msg));
+    }
+  };
 
   const generateStats = async (email, year, month) => {
     logger.info(`Generating stats for ${year}-${month}`);
