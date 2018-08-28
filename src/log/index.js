@@ -1,27 +1,32 @@
-import winston from 'winston';
+import { createLogger, format, transports } from 'winston';
 import { LoggingWinston } from '@google-cloud/logging-winston';
 
 export default ({ inGoogleCloud }) => {
-  const { Console } = winston.transports;
+  const { Console } = transports;
 
-  const transports = {
+  const appTransports = {
     default: [
       ...(inGoogleCloud ? [new LoggingWinston()] : []),
-      new Console({ json: false, timestamp: true, colorize: true }),
+      new Console(),
     ],
   };
 
   const exceptionHandlers = {
-    default: [new Console({ json: false, timestamp: true, colorize: true })],
+    default: [new Console()],
   };
 
   const loggingConfig = {
-    transports: transports.default,
+    format: format.combine(
+      format.colorize(),
+      format.timestamp(),
+      format.printf(info => `[${info.timestamp}] ${info.level}: ${info.message}`),
+    ),
+    transports: appTransports.default,
     exceptionHandlers: exceptionHandlers.default,
     exitOnError: true,
   };
 
-  const logger = new winston.Logger(loggingConfig);
+  const logger = createLogger(loggingConfig);
 
   return logger;
 };
