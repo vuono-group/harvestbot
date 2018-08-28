@@ -22,25 +22,6 @@ export default ({ taskIds }) => {
         : latestFullDate
     );
 
-  const getBillablePercentage = (
-    entries,
-    totalHours = entries.reduce(
-      (result, entry) =>
-        (entry.billable
-          ? { ...result, billable: entry.hours + result.billable }
-          : { ...result, nonBillable: result.nonBillable + entry.hours }),
-      { billable: 0, nonBillable: 0 },
-    ),
-    allHours = totalHours.billable + totalHours.nonBillable,
-  ) => (allHours ? Math.floor((totalHours.billable / (allHours)) * 100) : 0);
-
-  const getBillablePercentageCurrentMonth = sortedEntries =>
-    getBillablePercentage(sortedEntries.filter((entry) => {
-      const entryDate = new Date(entry.date);
-      return entryDate.getFullYear() === calendar.CURRENT_YEAR
-        && entryDate.getMonth() === calendar.CURRENT_MONTH;
-    }));
-
   const getPeriodRange = (
     entries,
     latestFullDate,
@@ -58,25 +39,43 @@ export default ({ taskIds }) => {
     end: endDate, // today or last calendar working day
   });
 
-  const calculateWorkedHours = (entries, filtered = entries.reduce((result, entry) => {
-    const isWorkingDay = calendar.isWorkingDay(new Date(entry.date));
-    const ignoreEntry = isPublicHoliday(entry.taskId) || isFlexLeave(entry.taskId);
-    const ignoreFromTotal = !isWorkingDay || ignoreEntry;
-    return {
-      ...result,
-      entries: ignoreFromTotal ? result.entries : [...result.entries, entry],
-      warnings: !ignoreEntry && !isWorkingDay
-        ? [...result.warnings, `Recorded hours in non-working day (${entry.date}) - ignoring!`] : result.warnings,
-      total: ignoreFromTotal ? result.total : result.total + entry.hours,
-    };
-  }, {
-    entries: [],
-    warnings: [],
-    total: 0,
-  })) => ({
+  const isCurrentMonth = date => date.getFullYear() === calendar.CURRENT_YEAR
+    && date.getMonth() === calendar.CURRENT_MONTH;
+
+  const calculateWorkedHours = (
+    entries,
+    filtered = entries.reduce((result, entry) => {
+      const entryDate = new Date(entry.date);
+      const isWorkingDay = calendar.isWorkingDay(entryDate);
+      const ignoreEntry = isPublicHoliday(entry.taskId) || isFlexLeave(entry.taskId);
+      const ignoreFromTotal = !isWorkingDay || ignoreEntry;
+      const isCurrenMonthEntry = !ignoreFromTotal && isCurrentMonth(entryDate);
+
+      return {
+        ...result,
+        warnings: !ignoreEntry && !isWorkingDay
+          ? [...result.warnings, `Recorded hours in non-working day (${entry.date}) - ignoring!`] : result.warnings,
+        total: ignoreFromTotal ? result.total : result.total + entry.hours,
+        billable: isCurrenMonthEntry && entry.billable
+          ? result.billable + entry.hours
+          : result.billable,
+        nonBillable: isCurrenMonthEntry && !entry.billable
+          ? result.nonBillable + entry.hours
+          : result.nonBillable,
+      };
+    }, {
+      warnings: [],
+      total: 0,
+      billable: 0,
+      nonBillable: 0,
+    }),
+    allHours = filtered.billable + filtered.nonBillable,
+  ) => ({
     warnings: filtered.warnings,
     total: filtered.total,
-    billablePercentageCurrentMonth: getBillablePercentageCurrentMonth(filtered.entries),
+    billablePercentageCurrentMonth: allHours
+      ? Math.floor((filtered.billable / (allHours)) * 100)
+      : 0,
   });
 
   const addDay = (entry, result) => {
