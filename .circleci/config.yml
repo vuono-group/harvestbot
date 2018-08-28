@@ -4,8 +4,6 @@ jobs:
     docker:
       - image: circleci/node:10.8.0
 
-    working_directory: ~/repo
-
     steps:
       - checkout
 
@@ -25,6 +23,20 @@ jobs:
       - run: npm run test
 
       - run: npm run ci:lock:upload
+
+  automerge:
+    docker:
+      - image: circleci/node:10.8.0
+
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+          - npm-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
+      - run: npm ci
+      - run:
+          name: Merge greenkeeper branch
+          command: npm run ci:automerge
 
   build:
     docker:
@@ -77,6 +89,12 @@ workflows:
   test_and_deploy:
     jobs:
       - test
+      - automerge:
+          requires:
+            - test
+          filters:
+            branches:
+              only: /greenkeeper\S*/
       - build:
           requires:
             - test
