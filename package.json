@@ -57,5 +57,10 @@
     "greenkeeper-lockfile": "^1.15.1",
     "jest": "^23.5.0",
     "rimraf": "^2.6.2"
+  },
+  "greenkeeper": {
+    "ignore": [
+      "rxjs"
+    ]
   }
 }
