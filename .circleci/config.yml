@@ -105,12 +105,12 @@ workflows:
       - test:
           requires:
             - prepare
-      #- automerge:
-      #    requires:
-      #      - test
-      #    filters:
-      #      branches:
-      #        only: /greenkeeper\S*/
+      - automerge:
+          requires:
+            - test
+          filters:
+            branches:
+              only: /greenkeeper\S*/
       - build:
           requires:
             - test
