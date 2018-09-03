@@ -3,7 +3,7 @@ import { DEFAULT_COLUMN_HEADERS } from './defaults';
 import decrypter from '../cloud/key-ring';
 
 export default () => {
-  const inGoogleCloud = !process.env.FUNCTION_NAME;
+  const inGoogleCloud = process.env.FUNCTION_NAME;
   const logger = log({ inGoogleCloud });
   const getEnvParam = param => (process.env[param]
     ? process.env[param]
