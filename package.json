@@ -4,7 +4,7 @@
   "description": "Chatbot for providing hours info from Harvest.",
   "main": "bin/index.js",
   "scripts": {
-    "build": "rimraf build/ && babel ./src --out-dir build/ --copy-files --ignore *.test.js",
+    "build": "rimraf build/ && babel ./src --out-dir build/ --ignore **/*.test.js",
     "ci:automerge": "circleci-automerge --filter=\"^greenkeeper/\"",
     "ci:lock:update": "greenkeeper-lockfile-update",
     "ci:lock:upload": "greenkeeper-lockfile-upload",
