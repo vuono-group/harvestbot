@@ -66,7 +66,7 @@ describe('Analyzer', () => {
   describe('calculateWorkedHours', () => {
     it('should calculate worked hours', () => expect(calculateWorkedHours(mockEntries))
       .toEqual({
-        billablePercentageCurrentMonth: 100,
+        billablePercentageCurrentMonth: 0,
         total: 7.5,
         warnings: ['Recorded hours in non-working day (2017-12-24) - ignoring!'],
       }));
