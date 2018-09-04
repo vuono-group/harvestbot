@@ -23,6 +23,7 @@ describe('Analyzer', () => {
     {
       ...mockEntry,
       date: '2018-08-27',
+      billable: false,
       taskId: 'flexLeaveTaskId',
     },
     {
@@ -47,7 +48,12 @@ describe('Analyzer', () => {
   };
 
 
-  const { calculateWorkedHours, getPeriodRange, getStats } = analyzer(mockConfig);
+  const {
+    calculateWorkedHours,
+    getPeriodRange,
+    getHoursStats,
+    getBillableStats,
+  } = analyzer(mockConfig);
 
   describe('getPeriodRange', () => {
     it('should get start and end dates', () => expect(getPeriodRange(mockDates, new Date('2018-07-20')))
@@ -71,8 +77,8 @@ describe('Analyzer', () => {
         warnings: ['Recorded hours in non-working day (2017-12-24) - ignoring!'],
       }));
   });
-  describe('getStats', () => {
-    it('should get stats', () => expect(getStats(mockTask, 1))
+  describe('getHoursStats', () => {
+    it('should get hours stats', () => expect(getHoursStats(mockTask, 1))
       .toEqual({
         absentDays: 1,
         billableHours: 7.5,
@@ -90,5 +96,35 @@ describe('Analyzer', () => {
         unpaidLeaveDays: 0,
         vacationDays: 0,
       }));
+  });
+  describe('getBillableStats', () => {
+    it('should get billable stats', () => expect(
+      getBillableStats(
+        [mockTask],
+        [{
+          hourly_rate: 10,
+          project: { id: 'projectId' },
+          task: { id: 'taskId' },
+        }],
+      ),
+    ).toEqual([
+      {
+        hours: 7.5, name: '', projectName: 'projectName', taskName: '', taskRate: '', total: 75,
+      },
+      {
+        taskName: 'taskName', hours: 7.5, taskRate: 10, total: 75,
+      },
+      {
+        hours: 7.5, name: 'first last', total: 75,
+      },
+      {
+        total: undefined,
+      },
+      {
+        hours: 7.5,
+        total: 75,
+        billableAvg: 10,
+      },
+    ]));
   });
 });

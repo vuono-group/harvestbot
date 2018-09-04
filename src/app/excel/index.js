@@ -4,14 +4,31 @@ export default () => {
   const CHAR_CODE_A = 65;
 
   // TODO: error handling
-  const writeSheet = (data, filePath, title, labels = []) => {
-    const sheet = xlsx.utils.json_to_sheet(data);
-    labels.map((label, index) => {
-      sheet[String.fromCharCode(CHAR_CODE_A + index) + 1].v = label;
-      return true;
-    });
+  const writeSheet = (filePath, sheets) => {
     const book = xlsx.utils.book_new();
-    xlsx.utils.book_append_sheet(book, sheet, title);
+    sheets.map((
+      {
+        rows,
+        title,
+        headers,
+        columns,
+      },
+    ) => {
+      const sheet = xlsx.utils.json_to_sheet(rows);
+      headers.map((label, index) => {
+        sheet[String.fromCharCode(CHAR_CODE_A + index) + 1].v = label;
+        return true;
+      });
+      if (!sheet['!cols']) {
+        sheet['!cols'] = [];
+      }
+      columns.map(({ index, width }) => {
+        sheet['!cols'][index] = { wch: width };
+        return index;
+      });
+
+      return xlsx.utils.book_append_sheet(book, sheet, title);
+    });
     xlsx.writeFile(book, filePath);
   };
 
