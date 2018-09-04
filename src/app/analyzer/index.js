@@ -106,19 +106,33 @@ export default ({ taskIds }) => {
     };
   };
 
-  const getStats = (
+  const getDayInfo = (
+    entry,
+    isCalendarWorkingDay = calendar.isWorkingDay(new Date(entry.date)),
+    isWorkingOrSickDay = !isHolidayOrFlex(entry.taskId),
+  ) => ({
+    isCalendarWorkingDay,
+    isWorkingOrSickDay: isCalendarWorkingDay && isWorkingOrSickDay,
+    isBillable: isCalendarWorkingDay && isWorkingOrSickDay && entry.billable,
+  });
+
+  const getHoursStats = (
     { user, entries },
     fullCalendarDays,
     recordedHours = entries.reduce(
       (result, entry) => {
-        if (calendar.isWorkingDay(new Date(entry.date))) {
-          const isWorkingOrSickDay = !isHolidayOrFlex(entry.taskId);
-          const isBillable = isWorkingOrSickDay && entry.billable;
-          const projectNotAdded = isBillable && !result.projectNames.includes(entry.projectName);
+        const dayInfo = getDayInfo(entry);
+        if (dayInfo.isCalendarWorkingDay) {
+          const projectNotAdded = dayInfo.isBillable
+            && !result.projectNames.includes(entry.projectName);
           return {
             ...addDay(entry, result),
-            hours: isWorkingOrSickDay ? result.hours + entry.hours : result.hours,
-            billableHours: isBillable ? result.billableHours + entry.hours : result.billableHours,
+            hours: dayInfo.isWorkingOrSickDay
+              ? result.hours + entry.hours
+              : result.hours,
+            billableHours: dayInfo.isBillable
+              ? result.billableHours + entry.hours
+              : result.billableHours,
             projectNames: projectNotAdded
               ? [...result.projectNames, entry.projectName]
               : result.projectNames,
@@ -160,9 +174,113 @@ export default ({ taskIds }) => {
     missingDays: recordedHours.dates.length - fullCalendarDays,
   });
 
+  const getBillableStats = (entries, taskRates) => {
+    const billableEntries = entries.reduce((result, { user, entries: userEntries }) => ([
+      ...result,
+      ...(userEntries.reduce((entryResult, entry) => (getDayInfo(entry).isBillable
+        ? [...entryResult, {
+          ...entry, userId: user.id, firstName: user.first_name, lastName: user.last_name,
+        }]
+        : entryResult), [])
+      ),
+    ]), []);
+    const sortedEntries = billableEntries.reduce((
+      result,
+      {
+        projectId, projectName, taskId, taskName, userId, hours, firstName, lastName,
+      },
+    ) => {
+      const project = result[projectId] || { tasks: {} };
+      const task = project.tasks[taskId] || { users: {} };
+      const user = task.users[userId];
+      return {
+        ...result,
+        [projectId]: {
+          ...project,
+          name: projectName,
+          tasks: {
+            ...project.tasks,
+            [taskId]: {
+              ...task,
+              rate: (taskRates.find(
+                ({
+                  project: { id: pId },
+                  task: { id: tId },
+                }) => pId === projectId && tId === taskId,
+              ) || {}).hourly_rate,
+              name: taskName,
+              users: {
+                ...task.users,
+                [userId]: {
+                  hours: user ? user.hours + hours : hours,
+                  firstName,
+                  lastName,
+                },
+              },
+            },
+          },
+        },
+      };
+    }, {});
+    const billableStats = Object.keys(sortedEntries).reduce((result, item) => {
+      const project = sortedEntries[item];
+      const taskRows = Object.keys(project.tasks).reduce((rows, taskKey) => {
+        const { name: taskName, rate: taskRate, users } = project.tasks[taskKey];
+        const userRows = Object.keys(users).reduce((userResult, userKey) => {
+          const { firstName, lastName, hours } = users[userKey];
+          return [
+            ...userResult,
+            { name: `${firstName} ${lastName}`, hours, total: hours * taskRate },
+          ];
+        }, []);
+        const taskData = {
+          taskName,
+          taskRate,
+          taskTotal: userRows.reduce((sum, { total }) => sum + total, 0),
+        };
+        return [
+          ...rows,
+          taskData,
+          ...userRows,
+        ];
+      }, []);
+      const projectHeader = {
+        projectName: project.name,
+        taskName: '',
+        taskRate: '',
+        name: '',
+        hours: '',
+        projectTotal: taskRows.reduce(
+          (sum, { taskTotal }) => (taskTotal ? sum + taskTotal : sum), 0,
+        ),
+      };
+
+      return [
+        ...result,
+        projectHeader,
+        ...taskRows,
+        {},
+      ];
+    }, []);
+    return [
+      ...billableStats,
+      {
+        billableTotal: billableStats.reduce(
+          (sum, { projectTotal }) => (projectTotal ? sum + projectTotal : sum), 0,
+        ),
+      },
+    ].map(({
+      projectTotal, billableTotal, taskTotal, total, ...item
+    }) => ({
+      ...item,
+      total: total || taskTotal || projectTotal || billableTotal,
+    }));
+  };
+
   return {
     getPeriodRange,
     calculateWorkedHours,
-    getStats,
+    getHoursStats,
+    getBillableStats,
   };
 };

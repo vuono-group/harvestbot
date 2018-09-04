@@ -92,114 +92,13 @@ export default (config, http) => {
     const workDaysInMonth = calendar.getWorkingDaysForMonth(year, month);
     return [
       { name: 'CALENDAR DAYS', days: workDaysInMonth },
-      ...entries.map(userData => analyzer.getStats(userData, workDaysInMonth)),
+      ...entries.map(userData => analyzer.getHoursStats(userData, workDaysInMonth)),
     ];
   };
 
-
-  // Project name - User - Task name - Hours count - Unit price - Total price
   const generateMonthlyBillingStats = async (entries) => {
     const taskRates = await tracker.getTaskAssignments();
-    const billableEntries = entries.reduce((result, { user, entries: userEntries }) => ([
-      ...result,
-      ...(userEntries.reduce((entryResult, entry) => (entry.billable
-        ? [...entryResult, {
-          ...entry, userId: user.id, firstName: user.first_name, lastName: user.last_name,
-        }]
-        : entryResult), [])
-      ),
-    ]), []);
-    const sortedEntries = billableEntries.reduce((
-      result,
-      {
-        projectId, projectName, taskId, taskName, userId, hours, firstName, lastName,
-      },
-    ) => {
-      const project = result[projectId] || { tasks: {} };
-      const task = project.tasks[taskId] || { users: {} };
-      const user = task.users[userId];
-      return {
-        ...result,
-        [projectId]: {
-          ...project,
-          name: projectName,
-          tasks: {
-            ...project.tasks,
-            [taskId]: {
-              ...task,
-              rate: (taskRates.find(
-                ({
-                  project: { id: pId },
-                  task: { id: tId },
-                }) => pId === projectId && tId === taskId,
-              ) || {}).hourly_rate,
-              name: taskName,
-              users: {
-                ...task.users,
-                [userId]: {
-                  hours: user ? user.hours + hours : hours,
-                  firstName,
-                  lastName,
-                },
-              },
-            },
-          },
-        },
-      };
-    }, {});
-    const billableStats = Object.keys(sortedEntries).reduce((result, item) => {
-      const project = sortedEntries[item];
-      const taskRows = Object.keys(project.tasks).reduce((rows, taskKey) => {
-        const { name: taskName, rate: taskRate, users } = project.tasks[taskKey];
-        const userRows = Object.keys(users).reduce((userResult, userKey) => {
-          const { firstName, lastName, hours } = users[userKey];
-          return [
-            ...userResult,
-            { name: `${firstName} ${lastName}`, hours, total: hours * taskRate },
-          ];
-        }, []);
-        const taskData = {
-          taskName,
-          taskRate,
-          taskTotal: userRows.reduce((sum, { total }) => sum + total, 0),
-        };
-        return [
-          ...rows,
-          taskData,
-          ...userRows,
-        ];
-      }, []);
-      const projectHeader = {
-        projectName: project.name,
-        taskName: '',
-        taskRate: '',
-        name: '',
-        hours: '',
-        projectTotal: taskRows.reduce(
-          (sum, { taskTotal }) => (taskTotal ? sum + taskTotal : sum), 0,
-        ),
-      };
-
-      return [
-        ...result,
-        projectHeader,
-        ...taskRows,
-        {},
-      ];
-    }, []);
-    return [
-      ...billableStats,
-      {
-        billableTotal: billableStats.reduce(
-          (sum, { projectTotal }) => (projectTotal ? sum + projectTotal : sum), 0,
-        ),
-      },
-    ].map(({
-      projectTotal, billableTotal, taskTotal, total, ...item
-    }) => ({
-      ...item,
-      total: total || taskTotal || projectTotal || billableTotal,
-    }));
+    return analyzer.getBillableStats(entries, taskRates);
   };
 
   const generateReport = async (
