@@ -48,5 +48,18 @@ export default (config, http) => {
 
   const getUsers = () => getAllUsers().reduce((result, item) => [...result, item], []).toPromise();
 
-  return { getTimeEntriesForUserId, getTimeEntriesForEmail, getUsers };
+  const getTaskAssignmentsForPage = page => api
+    .getJson(`/task_assignments?page=${page}`)
+    .map(({ task_assignments: tasks, next_page: nextPage }) => ({ tasks, nextPage }));
+
+  const getAllTaskAssignments = () => getTaskAssignmentsForPage(1)
+    .expand(({ nextPage }) => (nextPage ? getTaskAssignmentsForPage(nextPage) : empty()))
+    .mergeMap(({ tasks }) => tasks);
+
+  const getTaskAssignments = () => getAllTaskAssignments()
+    .reduce((result, item) => [...result, item], []).toPromise();
+
+  return {
+    getTimeEntriesForUserId, getTimeEntriesForEmail, getUsers, getTaskAssignments,
+  };
 };
