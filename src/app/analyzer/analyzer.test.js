@@ -109,10 +109,10 @@ describe('Analyzer', () => {
       ),
     ).toEqual([
       {
-        hours: '', name: '', projectName: 'projectName', taskName: '', taskRate: '', total: 75,
+        hours: 7.5, name: '', projectName: 'projectName', taskName: '', taskRate: '', total: 75,
       },
       {
-        taskName: 'taskName', taskRate: 10, total: 75,
+        taskName: 'taskName', hours: 7.5, taskRate: 10, total: 75,
       },
       {
         hours: 7.5, name: 'first last', total: 75,
@@ -121,7 +121,9 @@ describe('Analyzer', () => {
         total: undefined,
       },
       {
+        hours: 7.5,
         total: 75,
+        billableAvg: 10,
       },
     ]));
   });

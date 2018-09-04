@@ -1,4 +1,4 @@
-export const DEFAULT_COLUMN_HEADERS = [
+export const DEFAULT_HOURS_STATS_COLUMN_HEADERS = [
   'Name',
   'Working days',
   'Full hours',
@@ -15,4 +15,11 @@ export const DEFAULT_COLUMN_HEADERS = [
   'Marked days',
   'Missing days'];
 
-export default DEFAULT_COLUMN_HEADERS;
+export const DEFAULT_BILLABLE_STATS_COLUMN_HEADERS = [
+  'Project',
+  'Task',
+  'Hour rate',
+  'Consultant',
+  'Hours',
+  'EUR',
+  'Avg hour rate'];

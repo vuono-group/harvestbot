@@ -1,5 +1,8 @@
 import log from '../log';
-import { DEFAULT_COLUMN_HEADERS } from './defaults';
+import {
+  DEFAULT_HOURS_STATS_COLUMN_HEADERS,
+  DEFAULT_BILLABLE_STATS_COLUMN_HEADERS,
+} from './defaults';
 import decrypter from '../cloud/key-ring';
 
 export default () => {
@@ -24,9 +27,12 @@ export default () => {
       emailDomains: secretConfig.emailDomains
         ? secretConfig.emailDomains.split(',')
         : [],
-      statsColumnHeaders: secretConfig.statsColumnHeaders
-        ? secretConfig.statsColumnHeaders.split(',')
-        : DEFAULT_COLUMN_HEADERS,
+      hoursStatsColumnHeaders: secretConfig.hoursStatsColumnHeaders
+        ? secretConfig.hoursStatsColumnHeaders.split(',')
+        : DEFAULT_HOURS_STATS_COLUMN_HEADERS,
+      billableStatsColumnHeaders: secretConfig.billableStatsColumnHeaders
+        ? secretConfig.billableStatsColumnHeaders.split(',')
+        : DEFAULT_BILLABLE_STATS_COLUMN_HEADERS,
       taskIds: {
         publicHoliday: parseInt(secretConfig.taskIds.publicHoliday, 10),
         vacation: parseInt(secretConfig.taskIds.vacation, 10),

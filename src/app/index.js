@@ -133,19 +133,19 @@ export default (config, http) => {
       [{
         rows: monthlyHoursRows,
         title: `${year}-${month}-hours`,
-        headers: config.statsColumnHeaders,
+        headers: config.hoursStatsColumnHeaders,
         columns: [{ index: 0, width: 20 }, { index: 5, width: 20 }],
       },
       {
         rows: monthlyBillingRows,
         title: `${year}-${month}-billable`,
-        headers: [],
+        headers: config.billableStatsColumnHeaders,
         columns: [{ index: 0, width: 20 }, { index: 1, width: 20 }, { index: 3, width: 20 }],
       }],
     );
-    await emailer(config).sendExcelFile(email, 'Monthly harvest stats', `${year}-${month}`, filePath, fileName);
+    await emailer(config).sendExcelFile(authorisedUser.email, 'Monthly harvest stats', `${year}-${month}`, filePath, fileName);
     unlinkSync(filePath);
-    return `Stats sent to email ${email}.`;
+    return `Stats sent to email ${authorisedUser.email}.`;
   };
 
   return {
