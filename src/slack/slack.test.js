@@ -1,5 +1,4 @@
 import { Observable } from 'rxjs';
-import 'rxjs/add/observable/of';
 import slack from './index';
 
 describe('Slack', () => {
