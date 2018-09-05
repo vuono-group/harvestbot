@@ -9,7 +9,7 @@ export default ({ projectId, region, ...config }) => {
   const logger = log(config);
   const fileName = 'harvestbot-config.encrypted';
   const localFilePath = `${tmpdir()}/${fileName}`;
-  const secretStorage = storage();
+  const secretStorage = storage(config);
   const keyName = `projects/${projectId}/locations/${region}/keyRings/harvestbot-keyring/cryptoKeys/harvestbot-encryption-key`;
 
   const authorise = async () => {

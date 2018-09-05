@@ -1,4 +1,5 @@
 import { Observable } from 'rxjs';
+import 'rxjs/add/observable/of';
 import harvest from './index';
 
 describe('Harvest', () => {
