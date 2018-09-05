@@ -1,21 +1,33 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
 
-var _rxios = require("rxios");
+var _axios = _interopRequireDefault(require("axios"));
+
+var _Observable = require("rxjs/Observable");
 
 var _default = (baseURL, headers = {}) => {
-  const api = new _rxios.Rxios({
+  const api = _axios.default.create({
     baseURL,
     headers
   });
 
-  const getJson = url => api.get(url);
+  const createObservable = request => new _Observable.Observable(subscriber => request.then(response => {
+    subscriber.next(response.data);
+    subscriber.complete();
+  }).catch(err => {
+    subscriber.error(err);
+    subscriber.complete();
+  }));
 
-  const postJson = (url, payload) => api.post(url, payload);
+  const getJson = url => createObservable(api.get(url));
+
+  const postJson = (url, payload) => createObservable(api.post(url, payload));
 
   return {
     getJson,

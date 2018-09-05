@@ -7,6 +7,8 @@ exports.default = void 0;
 
 var _rxjs = require("rxjs");
 
+require("rxjs/add/operator/filter");
+
 require("rxjs/add/operator/mergeMap");
 
 var _default = (config, http, responseUrl) => {

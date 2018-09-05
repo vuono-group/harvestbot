@@ -28,7 +28,7 @@ var _default = (_ref) => {
   const logger = (0, _log.default)(config);
   const fileName = 'harvestbot-config.encrypted';
   const localFilePath = `${(0, _os.tmpdir)()}/${fileName}`;
-  const secretStorage = (0, _storage.default)();
+  const secretStorage = (0, _storage.default)(config);
   const keyName = `projects/${projectId}/locations/${region}/keyRings/harvestbot-keyring/cryptoKeys/harvestbot-encryption-key`;
 
   const authorise = async () => {
