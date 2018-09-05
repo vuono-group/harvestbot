@@ -6,20 +6,8 @@ jobs:
 
     steps:
       - checkout
-
-      - restore_cache:
-          keys:
-          - npm-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
-
       - run: npm install
-
       - run: npm run ci:lock:update
-
-      - save_cache:
-          paths:
-            - $HOME/.npm
-          key: npm-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
-
       - run: npm run ci:lock:upload
 
   test:
@@ -28,14 +16,15 @@ jobs:
 
     steps:
       - checkout
-
       - restore_cache:
           keys:
           - npm-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
-
       - run: npm ci
-
       - run: npm run test
+      - save_cache:
+          paths:
+            - $HOME/.npm
+          key: npm-deps-{{ .Branch }}-{{ checksum "package-lock.json" }}
 
   automerge:
     docker:
@@ -100,18 +89,30 @@ jobs:
 
 workflows:
   version: 2
-  test_and_deploy:
+  greenkeeper:
     jobs:
-      - prepare
+      - prepare:
+          filters:
+            branches:
+              only: /greenkeeper\S*/
       - test:
           requires:
             - prepare
+          filters:
+            branches:
+              only: /greenkeeper\S*/
       - automerge:
           requires:
             - test
           filters:
             branches:
               only: /greenkeeper\S*/
+  test_and_deploy:
+    jobs:
+      - test:
+          filters:
+            branches:
+              ignore: /greenkeeper\S*/
       - build:
           requires:
             - test
