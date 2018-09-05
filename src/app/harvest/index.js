@@ -16,7 +16,10 @@ export default (config, http) => {
 
   const getRangeQueryString = year => `&from=${year}-01-01&to=${year}-12-31`;
 
-  const getTimeEntriesForPage = (userId, year, page) => api.getJson(`/time_entries?user_id=${userId}&page=${page}${year ? getRangeQueryString(year) : ''}`)
+  const getTimeEntriesForPage = (userId, year, page) => api
+    .getJson(`/time_entries?user_id=${userId}&page=${page}${year
+      ? getRangeQueryString(year)
+      : ''}`)
     .map(({ next_page: nextPage, time_entries: entries }) => ({ entries, nextPage }));
 
   const getTimeEntriesForId = (userId, year = null) => getTimeEntriesForPage(userId, year, 1)
