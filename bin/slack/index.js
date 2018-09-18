@@ -7,30 +7,26 @@ exports.default = void 0;
 
 var _rxjs = require("rxjs");
 
-require("rxjs/add/observable/of");
-
-require("rxjs/add/operator/filter");
-
-require("rxjs/add/operator/mergeMap");
+var _operators = require("rxjs/operators");
 
 var _default = (config, http, responseUrl) => {
   const api = http('https://slack.com/api', {
     Authorization: `Bearer ${config.slackBotToken}`
   });
 
-  const getUserEmailForId = userId => api.getJson(`/users.info?user=${userId}&token=${config.slackBotToken}`).filter(({
+  const getUserEmailForId = userId => api.getJson(`/users.info?user=${userId}&token=${config.slackBotToken}`).pipe((0, _operators.filter)(({
     user: {
       deleted,
       is_restricted: isMultiChannelGuest,
       is_ultra_restricted: isSingleChannelGuest
     }
-  }) => !deleted && !isMultiChannelGuest && !isSingleChannelGuest).mergeMap(({
+  }) => !deleted && !isMultiChannelGuest && !isSingleChannelGuest), (0, _operators.mergeMap)(({
     user: {
       profile: {
         email
       }
     }
-  }) => _rxjs.Observable.of(email)).toPromise();
+  }) => (0, _rxjs.of)(email))).toPromise();
 
   const postResponse = (header, messageArray) => api.postJson(responseUrl, {
     text: header,

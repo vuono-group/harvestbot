@@ -5,17 +5,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _empty = require("rxjs/observable/empty");
+var _rxjs = require("rxjs");
 
-require("rxjs/add/operator/expand");
-
-require("rxjs/add/operator/first");
-
-require("rxjs/add/operator/map");
-
-require("rxjs/add/operator/mergeMap");
-
-require("rxjs/add/operator/reduce");
+var _operators = require("rxjs/operators");
 
 var _default = (config, http) => {
   const api = http('https://api.harvestapp.com/v2/', {
@@ -25,19 +17,41 @@ var _default = (config, http) => {
 
   const getRangeQueryString = year => `&from=${year}-01-01&to=${year}-12-31`;
 
-  const getTimeEntriesForPage = (userId, year, page) => api.getJson(`/time_entries?user_id=${userId}&page=${page}${year ? getRangeQueryString(year) : ''}`).map(({
+  const collect = (result, item) => [...result, item];
+
+  const getAllToPromise = (getAll, ...args) => getAll(...args).pipe((0, _operators.reduce)(collect, [])).toPromise();
+
+  const nextOrEmpty = (get, ...args) => ({
+    nextPage
+  }) => nextPage ? get(...args, nextPage) : (0, _rxjs.empty)();
+
+  const getTimeEntriesForPage = (userId, year, page) => api.getJson(`/time_entries?user_id=${userId}&page=${page}${year ? getRangeQueryString(year) : ''}`).pipe((0, _operators.map)(({
     next_page: nextPage,
     time_entries: entries
   }) => ({
     entries,
     nextPage
-  }));
+  })));
 
-  const getTimeEntriesForId = (userId, year = null) => getTimeEntriesForPage(userId, year, 1).expand(({
+  const getUsersForPage = page => api.getJson(`/users?page=${page}`).pipe((0, _operators.map)(({
+    users,
+    next_page: nextPage
+  }) => ({
+    users,
     nextPage
-  }) => nextPage ? getTimeEntriesForPage(userId, year, nextPage) : (0, _empty.empty)()).mergeMap(({
+  })));
+
+  const getTaskAssignmentsForPage = page => api.getJson(`/task_assignments?page=${page}`).pipe((0, _operators.map)(({
+    task_assignments: tasks,
+    next_page: nextPage
+  }) => ({
+    tasks,
+    nextPage
+  })));
+
+  const getTimeEntriesForId = (userId, year = null) => getTimeEntriesForPage(userId, year, 1).pipe((0, _operators.expand)(nextOrEmpty(getTimeEntriesForPage, userId, year)), (0, _operators.mergeMap)(({
     entries
-  }) => entries).map(({
+  }) => entries), (0, _operators.map)(({
     spent_date: date,
     hours,
     billable,
@@ -57,47 +71,27 @@ var _default = (config, http) => {
     projectName,
     taskId,
     taskName
-  })).reduce((result, item) => [...result, item], []);
+  })));
 
-  const getUsersForPage = page => api.getJson(`/users?page=${page}`).map(({
-    users,
-    next_page: nextPage
-  }) => ({
-    users,
-    nextPage
-  }));
-
-  const getAllUsers = () => getUsersForPage(1).expand(({
-    nextPage
-  }) => nextPage ? getUsersForPage(nextPage) : (0, _empty.empty)()).mergeMap(({
+  const getAllUsers = () => getUsersForPage(1).pipe((0, _operators.expand)(nextOrEmpty(getUsersForPage)), (0, _operators.mergeMap)(({
     users
-  }) => users);
+  }) => users));
 
-  const getTimeEntriesForEmail = (userName, validateEmail = () => null) => getAllUsers().first(({
-    email
-  }) => userName === validateEmail(email)).mergeMap(({
-    id
-  }) => getTimeEntriesForId(id)).toPromise();
-
-  const getTimeEntriesForUserId = (userId, year) => getTimeEntriesForId(userId, year).toPromise();
-
-  const getUsers = () => getAllUsers().reduce((result, item) => [...result, item], []).toPromise();
-
-  const getTaskAssignmentsForPage = page => api.getJson(`/task_assignments?page=${page}`).map(({
-    task_assignments: tasks,
-    next_page: nextPage
-  }) => ({
-    tasks,
-    nextPage
-  }));
-
-  const getAllTaskAssignments = () => getTaskAssignmentsForPage(1).expand(({
-    nextPage
-  }) => nextPage ? getTaskAssignmentsForPage(nextPage) : (0, _empty.empty)()).mergeMap(({
+  const getAllTaskAssignments = () => getTaskAssignmentsForPage(1).pipe((0, _operators.expand)(nextOrEmpty(getTaskAssignmentsForPage)), (0, _operators.mergeMap)(({
     tasks
-  }) => tasks);
+  }) => tasks));
 
-  const getTaskAssignments = () => getAllTaskAssignments().reduce((result, item) => [...result, item], []).toPromise();
+  const getTimeEntriesForUserId = (userId, year) => getAllToPromise(getTimeEntriesForId, userId, year);
+
+  const getTimeEntriesForEmail = (userName, validateEmail = () => null) => getAllUsers().pipe((0, _operators.first)(({
+    email
+  }) => userName === validateEmail(email)), (0, _operators.mergeMap)(({
+    id
+  }) => getTimeEntriesForId(id)), (0, _operators.reduce)(collect, [])).toPromise();
+
+  const getUsers = () => getAllToPromise(getAllUsers);
+
+  const getTaskAssignments = () => getAllToPromise(getAllTaskAssignments);
 
   return {
     getTimeEntriesForUserId,

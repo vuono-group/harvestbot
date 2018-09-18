@@ -9,7 +9,7 @@ exports.default = void 0;
 
 var _axios = _interopRequireDefault(require("axios"));
 
-var _Observable = require("rxjs/Observable");
+var _rxjs = require("rxjs");
 
 var _default = (baseURL, headers = {}) => {
   const api = _axios.default.create({
@@ -17,7 +17,7 @@ var _default = (baseURL, headers = {}) => {
     headers
   });
 
-  const createObservable = request => new _Observable.Observable(subscriber => request.then(response => {
+  const createObservable = request => new _rxjs.Observable(subscriber => request.then(response => {
     subscriber.next(response.data);
     subscriber.complete();
   }).catch(err => {
