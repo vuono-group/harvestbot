@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 
 export default (baseURL, headers = {}) => {
   const api = axios.create({

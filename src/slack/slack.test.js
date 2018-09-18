@@ -1,11 +1,11 @@
-import { Observable } from 'rxjs';
+import { of } from 'rxjs';
 import slack from './index';
 
 describe('Slack', () => {
   const mockUser = { user: { profile: { email: 'email' } } };
   const mockConfig = {};
   const mockHttp = () => ({
-    getJson: () => Observable.of(mockUser),
+    getJson: () => of(mockUser),
   });
   const { getUserEmailForId } = slack(mockConfig, mockHttp);
 
