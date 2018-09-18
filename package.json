@@ -40,7 +40,6 @@
     "axios": "0.18.0",
     "googleapis": "33.0.0",
     "rxjs": "6.3.2",
-    "rxjs-compat": "6.3.2",
     "winston": "3.1.0",
     "xlsx": "0.14.0"
   },

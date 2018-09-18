@@ -1,5 +1,4 @@
-import { Observable } from 'rxjs';
-import 'rxjs/add/observable/of';
+import { of } from 'rxjs';
 import harvest from './index';
 
 describe('Harvest', () => {
@@ -16,9 +15,9 @@ describe('Harvest', () => {
   };
   const mockConfig = {};
   const mockHttp = () => ({
-    getJson: params => Observable.of((params.includes('/users') ? mockUsers : mockEntries)),
+    getJson: params => of((params.includes('/users') ? mockUsers : mockEntries)),
   });
-  const { getTimeEntriesForEmail } = harvest(mockConfig, mockHttp);
+  const { getTimeEntriesForEmail, getUsers } = harvest(mockConfig, mockHttp);
 
   describe('getTimeEntriesForEmail', () => {
     it('should get time entries', () => {
@@ -36,6 +35,15 @@ describe('Harvest', () => {
             taskName: expected.task.name,
           }]);
         });
+    });
+  });
+  describe('getUsers', () => {
+    it('should get users', () => {
+      expect.assertions(1);
+      getUsers()
+        .then(
+          res => expect(res).toEqual(mockUsers.users),
+        );
     });
   });
 });
