@@ -1,13 +1,5 @@
 version: 2
 jobs:
-  prepare:
-    docker:
-      - image: circleci/node:10.8.0
-
-    steps:
-      - checkout
-      - run: npm install
-
   test:
     docker:
       - image: circleci/node:10.8.0
@@ -87,24 +79,6 @@ jobs:
 
 workflows:
   version: 2
-  greenkeeper:
-    jobs:
-      - prepare:
-          filters:
-            branches:
-              only: /greenkeeper\S*/
-      - test:
-          requires:
-            - prepare
-          filters:
-            branches:
-              only: /greenkeeper\S*/
-      - automerge:
-          requires:
-            - test
-          filters:
-            branches:
-              only: /greenkeeper\S*/
   test_and_deploy:
     jobs:
       - test:
@@ -117,6 +91,12 @@ workflows:
           filters:
             branches:
               only: master
+      - automerge:
+          requires:
+            - test
+          filters:
+            branches:
+              only: /greenkeeper\S*/
   notify:
     triggers:
       - schedule:
