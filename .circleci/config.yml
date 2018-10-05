@@ -81,10 +81,7 @@ workflows:
   version: 2
   test_and_deploy:
     jobs:
-      - test:
-          filters:
-            branches:
-              ignore: /greenkeeper\S*/
+      - test
       - build:
           requires:
             - test
