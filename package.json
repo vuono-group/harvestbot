@@ -32,12 +32,12 @@
     "@babel/runtime": "7.2.0",
     "@google-cloud/datastore": "2.0.0",
     "@google-cloud/logging-winston": "0.10.2",
-    "@google-cloud/pubsub": "0.21.1",
+    "@google-cloud/pubsub": "0.22.2",
     "@google-cloud/storage": "2.3.3",
     "@sendgrid/mail": "6.3.1",
     "axios": "0.18.0",
     "googleapis": "36.0.0",
-    "rxjs": "6.3.2",
+    "rxjs": "6.3.3",
     "winston": "3.1.0",
     "xlsx": "0.14.1"
   },
@@ -51,10 +51,10 @@
     "circleci-automerge": "1.1.0",
     "commander": "2.19.0",
     "config": "3.0.1",
-    "eslint": "5.4.0",
+    "eslint": "5.10.0",
     "eslint-config-airbnb-base": "13.1.0",
     "eslint-plugin-import": "2.14.0",
-    "jest": "23.5.0",
+    "jest": "23.6.0",
     "rimraf": "2.6.2"
   }
 }
