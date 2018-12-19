@@ -23,7 +23,7 @@ var _default = ({
   };
   const loggingConfig = {
     format: _winston.format.combine(_winston.format.colorize(), _winston.format.timestamp(), _winston.format.printf(info => `[${info.timestamp}] ${info.level}: ${info.message}`)),
-    level: 'info',
+    level: 'INFO',
     transports: appTransports.default,
     exceptionHandlers: exceptionHandlers.default,
     exitOnError: true
