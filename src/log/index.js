@@ -21,7 +21,7 @@ export default ({ inGoogleCloud }) => {
       format.timestamp(),
       format.printf(info => `[${info.timestamp}] ${info.level}: ${info.message}`),
     ),
-    level: 'info',
+    level: 'INFO',
     transports: appTransports.default,
     exceptionHandlers: exceptionHandlers.default,
     exitOnError: true,
