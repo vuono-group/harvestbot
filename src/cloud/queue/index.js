@@ -1,4 +1,4 @@
-import PubSub from '@google-cloud/pubsub';
+import { PubSub } from '@google-cloud/pubsub';
 
 export default (config) => {
   const topics = {
