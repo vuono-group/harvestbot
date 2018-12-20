@@ -42,11 +42,11 @@
     "xlsx": "0.14.1"
   },
   "devDependencies": {
-    "@babel/cli": "7.2.0",
+    "@babel/cli": "7.2.3",
     "@babel/core": "7.2.2",
     "@babel/plugin-proposal-object-rest-spread": "7.2.0",
     "@babel/plugin-transform-runtime": "7.2.0",
-    "@babel/preset-env": "7.2.0",
+    "@babel/preset-env": "7.2.3",
     "babel-core": "7.0.0-bridge.0",
     "circleci-automerge": "1.1.0",
     "commander": "2.19.0",
