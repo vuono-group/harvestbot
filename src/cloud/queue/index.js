@@ -1,11 +1,11 @@
-import { PubSub } from '@google-cloud/pubsub';
+import PubSub from '@google-cloud/pubsub';
 
 export default (config) => {
   const topics = {
     flextime: 'flextime',
     stats: 'stats',
   };
-  const pubsubClient = new PubSub({
+  const pubsubClient = PubSub({
     projectId: config.projectId,
   });
 
