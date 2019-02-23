@@ -88,12 +88,13 @@ workflows:
           filters:
             branches:
               only: master
-      - automerge:
-          requires:
-            - test
-          filters:
-            branches:
-              only: /greenkeeper\S*/
+      # TODO: write proper integration tests before enabling automerging
+      #- automerge:
+      #    requires:
+      #      - test
+      #    filters:
+      #      branches:
+      #        only: /greenkeeper\S*/
   notify:
     triggers:
       - schedule:
