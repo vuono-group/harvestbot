@@ -18,7 +18,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/lauravuo/harvestbot"
+    "url": "https://github.com/NewThingsCo/harvestbot"
   },
   "keywords": [
     "harvest",
@@ -26,13 +26,13 @@
     "slack",
     "chatbot"
   ],
-  "author": "lauravuo",
+  "author": "NewThingsCo",
   "license": "MIT",
   "dependencies": {
     "@babel/runtime": "7.3.1",
     "@google-cloud/datastore": "3.1.2",
     "@google-cloud/logging-winston": "0.11.0",
-    "@google-cloud/pubsub": "0.24.1",
+    "@google-cloud/pubsub": "0.25.0",
     "@google-cloud/storage": "2.4.3",
     "@sendgrid/mail": "6.3.1",
     "axios": "0.18.0",
