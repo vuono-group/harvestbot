@@ -12,15 +12,20 @@ export default ({ inGoogleCloud }) => {
   };
 
   const exceptionHandlers = {
-    default: [new Console()],
+    default: [
+      ...(inGoogleCloud ? [new LoggingWinston()] : []),
+      new Console(),
+    ],
   };
 
   const loggingConfig = {
-    format: format.combine(
-      format.colorize(),
-      format.timestamp(),
-      format.printf(info => `[${info.timestamp}] ${info.level}: ${info.message}`),
-    ),
+    ...(inGoogleCloud ? {} : {
+      format: format.combine(
+        format.colorize(),
+        format.timestamp(),
+        format.printf(info => `[${info.timestamp}] ${info.level}: ${info.message}`),
+      ),
+    }),
     level: 'info',
     transports: appTransports.default,
     exceptionHandlers: exceptionHandlers.default,
