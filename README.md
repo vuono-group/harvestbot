@@ -114,6 +114,30 @@ Commands:
   decrypt                       Decrypt and show app configuration.
 ```
 
+Example:
+```
+npm start flextime laura.vuorenoja@newthings.co
+
+> harvestbot@1.0.0 start /Users/lauravuo/work/NewThingsCo/harvestbot
+> npm run build && node ./build/local.js "flextime" "laura.vuorenoja@newthings.co"
+
+
+> harvestbot@1.0.0 build /Users/lauravuo/work/NewThingsCo/harvestbot
+> rimraf build/ && babel ./src --out-dir build/ --ignore **/*.test.js
+
+Successfully compiled 20 files with Babel.
+[2019-03-17T11:03:20.294Z] info: Calculating flextime for laura.vuorenoja@newthings.co
+[2019-03-17T11:03:20.295Z] info: Fetch data for laura.vuorenoja@newthings.co
+[2019-03-17T11:03:36.031Z] info: Received range starting from Wednesday, June 7, 2017 to Friday, March 15, 2019
+[2019-03-17T11:03:36.034Z] info: Total working hours from range start 3360
+[2019-03-17T11:03:36.041Z] info: No warnings!
+[2019-03-17T11:03:36.043Z] info: *Your flex hours count: -0.5*
+[2019-03-17T11:03:36.043Z] info: All done!
+[2019-03-17T11:03:36.043Z] info: *Your flex hours count: -0.5*
+[2019-03-17T11:03:36.044Z] info: Latest calendar working day: Friday, March 15, 2019
+[2019-03-17T11:03:36.044Z] info: Last time you have recorded hours: Friday, March 15, 2019
+[2019-03-17T11:03:36.044Z] info: Current month 82% billable
+```
 
 ## Deployment
 
