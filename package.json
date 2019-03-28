@@ -51,7 +51,7 @@
     "circleci-automerge": "1.1.0",
     "commander": "2.19.0",
     "config": "3.0.1",
-    "eslint": "5.15.0",
+    "eslint": "5.15.3",
     "eslint-config-airbnb-base": "13.1.0",
     "eslint-plugin-import": "2.16.0",
     "jest": "24.1.0",
