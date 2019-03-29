@@ -25,7 +25,11 @@ export const initFlextime = async (req, res) => {
     if (req.body.text === 'help') {
       return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
     }
-    const cmdParts = req.body.text.split(' ');
+
+    const cmd = req.body.text;
+    log.info(`Received valid Slack request with cmd ${cmd}`);
+
+    const cmdParts = cmd.split(' ');
     if (cmdParts.length > 0 && cmdParts[0] === 'stats') {
       const currentDate = new Date();
       const year = cmdParts.length > 1 ? cmdParts[1] : currentDate.getFullYear();
