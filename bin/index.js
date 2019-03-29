@@ -40,13 +40,13 @@ const initFlextime = async (req, res) => {
   const config = await getAppConfig();
 
   if ((0, _verifier.default)(config).verifySlackRequest(req)) {
-    if (req.body.text === 'help') {
+    const cmd = req.body.text;
+
+    if (cmd === 'help') {
       return res.json({
         text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._'
       });
     }
-
-    const cmd = req.body.text;
 
     _log.default.info(`Received valid Slack request with cmd ${cmd}`);
 
