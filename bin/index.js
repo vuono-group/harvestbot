@@ -46,7 +46,11 @@ const initFlextime = async (req, res) => {
       });
     }
 
-    const cmdParts = req.body.text.split(' ');
+    const cmd = req.body.text;
+
+    _log.default.info(`Received valid Slack request with cmd ${cmd}`);
+
+    const cmdParts = cmd.split(' ');
 
     if (cmdParts.length > 0 && cmdParts[0] === 'stats') {
       const currentDate = new Date();
