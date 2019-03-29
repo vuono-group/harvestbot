@@ -7,8 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
-
 var _googleapis = require("googleapis");
 
 var _fs = require("fs");
@@ -19,17 +17,16 @@ var _log = _interopRequireDefault(require("../../log"));
 
 var _storage = _interopRequireDefault(require("../storage"));
 
-var _default = (_ref) => {
-  let {
+var _default = config => {
+  const {
     projectId,
     region
-  } = _ref,
-      config = (0, _objectWithoutProperties2.default)(_ref, ["projectId", "region"]);
+  } = config;
   const logger = (0, _log.default)(config);
   const fileName = 'harvestbot-config.encrypted';
   const localFilePath = `${(0, _os.tmpdir)()}/${fileName}`;
   const secretStorage = (0, _storage.default)(config);
-  const keyName = `projects/${projectId}/locations/${region}/keyRings/harvestbot-keyring/cryptoKeys/harvestbot-encryption-key`;
+  const keyName = `projects/${projectId}/locations/${region}/keyRings/${projectId}-keyring/cryptoKeys/${projectId}-encryption-key`;
 
   const authorise = async () => {
     const authClient = await _googleapis.google.auth.getClient({
@@ -48,9 +45,11 @@ var _default = (_ref) => {
   };
 
   const encryptSecret = async plainText => {
+    logger.info('Authorizing to Google Cloud');
     const cloudkms = await authorise();
 
     if (cloudkms) {
+      logger.info('Authorize done, encrypting and storing configuration.');
       const request = {
         name: keyName,
         resource: {

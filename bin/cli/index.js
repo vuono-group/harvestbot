@@ -51,6 +51,7 @@ var _default = (config, http) => {
   };
 
   const encryptConfiguration = async () => {
+    logger.info('Encrypting configuration...');
     encryptSecret(JSON.stringify(_config.default));
   };
 
