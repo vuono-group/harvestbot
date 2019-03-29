@@ -61,8 +61,11 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Store Service Account
+          command: echo $GCLOUD_SERVICE_KEY_TEST > ${HOME}/gcloud-service-key.json
+      - run:
           name: Deploy cloud functions to test
-          command: ./tools/deploy.sh $GCLOUD_SERVICE_KEY_TEST $GCLOUD_PROJECT_TEST $GCLOUD_FUNCTION_REGION_TEST
+          command: ./tools/deploy.sh $GCLOUD_PROJECT_TEST $GCLOUD_FUNCTION_REGION_TEST
 
   deploy_prod:
     docker:
@@ -70,8 +73,11 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Store Service Account
+          command: echo $GCLOUD_SERVICE_KEY_PROD > ${HOME}/gcloud-service-key.json
+      - run:
           name: Deploy cloud functions to prod
-          command: ./tools/deploy.sh $GCLOUD_SERVICE_KEY_PROD $GCLOUD_PROJECT_PROD $GCLOUD_FUNCTION_REGION_PROD
+          command: ./tools/deploy.sh $GCLOUD_PROJECT_PROD $GCLOUD_FUNCTION_REGION_PROD
 
   notify:
     docker:

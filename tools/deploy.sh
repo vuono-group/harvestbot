@@ -1,11 +1,7 @@
 set -e
 
-GCLOUD_SERVICE_KEY=$1
-GCLOUD_PROJECT=$2
-GCLOUD_FUNCTION_REGION=$3
-
-echo "Store service account"
-echo $GCLOUD_SERVICE_KEY > $HOME/gcloud-service-key.json
+GCLOUD_PROJECT=$1
+GCLOUD_FUNCTION_REGION=$2
 
 echo "Activate service account"
 gcloud auth activate-service-account --key-file=$HOME/gcloud-service-key.json
