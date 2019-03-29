@@ -46,6 +46,8 @@ export const initFlextime = async (req, res) => {
       return res.json({ text: 'Starting to generate stats. This may take a while...' });
     }
 
+    logger.info('Enqueuing flex time request');
+
     await queue(config)
       .enqueueFlexTimeRequest({ userId: req.body.user_id, responseUrl: req.body.response_url });
     return res.json({ text: 'Starting to calculate flextime. This may take a while... Join channel #harvest for weekly notifications.' });
