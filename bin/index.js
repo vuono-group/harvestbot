@@ -67,6 +67,7 @@ const initFlextime = async (req, res) => {
       });
     }
 
+    logger.info('Enqueuing flex time request');
     await (0, _queue.default)(config).enqueueFlexTimeRequest({
       userId: req.body.user_id,
       responseUrl: req.body.response_url
