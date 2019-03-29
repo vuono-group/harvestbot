@@ -5,12 +5,13 @@ import { tmpdir } from 'os';
 import log from '../../log';
 import storage from '../storage';
 
-export default ({ projectId, region, ...config }) => {
+export default (config) => {
+  const { projectId, region } = config;
   const logger = log(config);
   const fileName = 'harvestbot-config.encrypted';
   const localFilePath = `${tmpdir()}/${fileName}`;
   const secretStorage = storage(config);
-  const keyName = `projects/${projectId}/locations/${region}/keyRings/harvestbot-keyring/cryptoKeys/harvestbot-encryption-key`;
+  const keyName = `projects/${projectId}/locations/${region}/keyRings/${projectId}-keyring/cryptoKeys/${projectId}-encryption-key`;
 
   const authorise = async () => {
     const authClient = await google.auth.getClient({
@@ -27,8 +28,11 @@ export default ({ projectId, region, ...config }) => {
   };
 
   const encryptSecret = async (plainText) => {
+    logger.info('Authorizing to Google Cloud');
     const cloudkms = await authorise();
+
     if (cloudkms) {
+      logger.info('Authorize done, encrypting and storing configuration.');
       const request = {
         name: keyName,
         resource: {

@@ -33,6 +33,8 @@ export default (config, http) => {
   };
 
   const encryptConfiguration = async () => {
+    logger.info('Encrypting configuration...');
+
     encryptSecret(JSON.stringify(configuration));
   };
 
