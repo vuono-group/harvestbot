@@ -84,6 +84,13 @@ jobs:
       - checkout
       - run: ./tools/notify.sh
 
+only-tags: &only-tags
+ filters:
+    tags:
+      only: /^v.*/
+    branches:
+      ignore: /.*/
+
 workflows:
   version: 2
   test_and_deploy:
@@ -101,14 +108,13 @@ workflows:
           filters:
             branches:
               only: /greenkeeper\S*/
+      - hold:
+          type: approval # manually approve production deployment
+          <<: *only-tags
       - deploy_prod:
           requires:
             - hold
-          filters:
-            tags:
-              only: /^v.*/
-            branches:
-              ignore: /.*/
+          <<: *only-tags
   notify:
     triggers:
       - schedule:
