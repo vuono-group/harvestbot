@@ -22,11 +22,12 @@ const getAppConfig = async () => {
 export const initFlextime = async (req, res) => {
   const config = await getAppConfig();
   if (verifier(config).verifySlackRequest(req)) {
-    if (req.body.text === 'help') {
+    const cmd = req.body.text;
+
+    if (cmd === 'help') {
       return res.json({ text: '_Bot for calculating your harvest balance. Use /flextime with no parameters to start calculation._' });
     }
 
-    const cmd = req.body.text;
     log.info(`Received valid Slack request with cmd ${cmd}`);
 
     const cmdParts = cmd.split(' ');
@@ -40,6 +41,7 @@ export const initFlextime = async (req, res) => {
         });
       return res.json({ text: 'Starting to generate stats. This may take a while...' });
     }
+
     await queue(config)
       .enqueueFlexTimeRequest({ userId: req.body.user_id, responseUrl: req.body.response_url });
     return res.json({ text: 'Starting to calculate flextime. This may take a while... Join channel #harvest for weekly notifications.' });

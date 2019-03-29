@@ -59,6 +59,7 @@ jobs:
     docker:
       - image: google/cloud-sdk
     steps:
+      - checkout
       - run:
           name: Deploy cloud functions to test
           command: ./tools/deploy.sh \
@@ -70,6 +71,7 @@ jobs:
     docker:
       - image: google/cloud-sdk
     steps:
+      - checkout
       - run:
           name: Deploy cloud functions to prod
           command: ./tools/deploy.sh \
