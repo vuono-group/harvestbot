@@ -62,10 +62,7 @@ jobs:
       - checkout
       - run:
           name: Deploy cloud functions to test
-          command: ./tools/deploy.sh \
-            $GCLOUD_SERVICE_KEY_TEST \
-            $GCLOUD_PROJECT_TEST \
-            $GCLOUD_FUNCTION_REGION_TEST
+          command: ./tools/deploy.sh $GCLOUD_SERVICE_KEY_TEST $GCLOUD_PROJECT_TEST $GCLOUD_FUNCTION_REGION_TEST
 
   deploy_prod:
     docker:
@@ -74,10 +71,7 @@ jobs:
       - checkout
       - run:
           name: Deploy cloud functions to prod
-          command: ./tools/deploy.sh \
-            $GCLOUD_SERVICE_KEY_PROD \
-            $GCLOUD_PROJECT_PROD \
-            $GCLOUD_FUNCTION_REGION_PROD
+          command: ./tools/deploy.sh $GCLOUD_SERVICE_KEY_PROD $GCLOUD_PROJECT_PROD $GCLOUD_FUNCTION_REGION_PROD
 
   notify:
     docker:
