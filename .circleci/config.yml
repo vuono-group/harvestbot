@@ -110,12 +110,7 @@ workflows:
           filters:
             branches:
               only: /greenkeeper\S*/
-      - hold:
-          type: approval # manually approve production deployment
-          <<: *only-tags
       - deploy_prod:
-          requires:
-            - hold
           <<: *only-tags
   notify:
     triggers:
