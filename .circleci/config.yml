@@ -50,25 +50,32 @@ jobs:
           cp -R build/ bin/
           git add bin/
           if git commit -a -m "[skip ci] Update deployable build output."; then
-            git push origin master
+            git push origin dev
             # Trigger deployment with updated build output
-            curl -u ${CIRCLE_API_PROJECT_TOKEN}: -d build_parameters[CIRCLE_JOB]=deploy https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/$CIRCLE_BRANCH
+            curl -u ${CIRCLE_API_PROJECT_TOKEN}: -d build_parameters[CIRCLE_JOB]=deploy_test https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/$CIRCLE_BRANCH
           fi
 
-  deploy:
+  deploy_test:
     docker:
       - image: google/cloud-sdk
     steps:
       - run:
-          name: Store Service Account
-          command: echo $GCLOUD_SERVICE_KEY > ${HOME}/gcloud-service-key.json
-      - run: |
-          gcloud auth activate-service-account --key-file=${HOME}/gcloud-service-key.json
-          gcloud --quiet config set project ${GCLOUD_PROJECT}
-          gcloud functions deploy initFlextime --source ${GCLOUD_REPOSITORY_URL} --region ${GCLOUD_FUNCTION_REGION} --format=none
-          gcloud functions deploy calcFlextime --source ${GCLOUD_REPOSITORY_URL} --region ${GCLOUD_FUNCTION_REGION} --format=none
-          gcloud functions deploy calcStats --source ${GCLOUD_REPOSITORY_URL} --region ${GCLOUD_FUNCTION_REGION} --format=none
-          gcloud functions deploy notify --source ${GCLOUD_REPOSITORY_URL} --region ${GCLOUD_FUNCTION_REGION} --format=none
+          name: Deploy cloud functions to test
+          command: ./tools/deploy.sh \
+            $GCLOUD_SERVICE_KEY_TEST \
+            $GCLOUD_PROJECT_TEST \
+            $GCLOUD_FUNCTION_REGION_TEST
+
+  deploy_prod:
+    docker:
+      - image: google/cloud-sdk
+    steps:
+      - run:
+          name: Deploy cloud functions to prod
+          command: ./tools/deploy.sh \
+            $GCLOUD_SERVICE_KEY_PROD \
+            $GCLOUD_PROJECT_PROD \
+            $GCLOUD_FUNCTION_REGION_PROD
 
   notify:
     docker:
@@ -87,14 +94,21 @@ workflows:
             - test
           filters:
             branches:
-              only: master
-      # TODO: write proper integration tests before enabling automerging
-      #- automerge:
-      #    requires:
-      #      - test
-      #    filters:
-      #      branches:
-      #        only: /greenkeeper\S*/
+              only: dev
+      - automerge:
+          requires:
+            - test
+          filters:
+            branches:
+              only: /greenkeeper\S*/
+      - deploy_prod:
+          requires:
+            - hold
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
   notify:
     triggers:
       - schedule:
