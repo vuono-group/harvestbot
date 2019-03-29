@@ -145,19 +145,12 @@ Successfully compiled 20 files with Babel.
 
 You need [Terraform](https://www.terraform.io/) to initialize the cloud resources.
 
-1. [Create new project](https://console.cloud.google.com/) in Google Cloud console (or use the one you created when setting up local environment).
-1. Enable needed APIs for your project in Google Cloud console:
-  1. Cloud Functions API
-  1. Cloud Key Management Service (KMS) API
-  1. Cloud Resource Manager API
-1. Create datastore database (in datastore mode) to your region (in Google Cloud console).
-1. Download to you computer the Google credentials in JSON format for your project's default service account (<gcloud_project_id>@appspot.gserviceaccount.com)
-2. Make sure the service account has following roles (in Google Cloud Console IAM view):
-  1. Cloud KMS CryptoKey Encrypter/Decrypter
-  1. Editor
-  1. Project IAM Admin
-1. Define following environment variables:
-
+* [Create new project](https://console.cloud.google.com/) in Google Cloud console (or use the one you created when setting up local environment).
+* Enable needed APIs for your project in Google Cloud console: Cloud Functions API, Cloud Key Management Service (KMS) API, Cloud Resource Manager API
+* Create datastore database (in datastore mode) to your region (in Google Cloud console).
+* Download to you computer the Google credentials in JSON format for your project's default service account (GCLOUD_PROJECT_ID@appspot.gserviceaccount.com)
+* Make sure the service account has following roles (in Google Cloud Console IAM view): Cloud KMS CryptoKey Encrypter/Decrypter, Editor, Project IAM Admin
+* Define following environment variables:
 ```
 export TF_VAR_gcloud_credentials_path=<path_to_service_account_json_file>
 export TF_VAR_gcloud_project_region=<gcloud_region>
@@ -167,8 +160,7 @@ export TF_VAR_gcloud_member_kms_manager=user:<your_email>
 export TF_VAR_gcloud_member_secret_decrypter=serviceAccount:<gcloud_project_id>@appspot.gserviceaccount.com
 export TF_VAR_gcloud_service_account_email=<gcloud_project_id>@appspot.gserviceaccount.com
 ```
-
-1. Initialize key resources to Google Cloud using Terraform-tool:
+* Initialize encryption related resources to Google Cloud using Terraform-tool:
 ```
 cd infra
 terraform apply
@@ -177,18 +169,18 @@ terraform apply
 ### Integrate bot to Slack
 
 1. [Create new Slack App](https://api.slack.com/apps)
-2. Record the Slack signing secret and OAuth access token for configuration in later step.
-3. Configure the slash command that will trigger your bot in "Slash Commands" tab. The request URL you can fill out later when you have the cloud functions in place.
-4. Add permissions for scopes **chat:write:bot**, **commands**, **users:read** and **users:read.email** to be able to send messages to your workspace and get the users email address.
-5. Install the app to your workspace.
+1. Configure the slash command that will trigger your bot in "Slash Commands" tab. The request URL you can fill out later when you have the cloud functions in place.
+1. Add permissions for scopes **chat:write:bot**, **commands**, **users:read** and **users:read.email** to be able to send messages to your workspace and get the users email address.
+1. Install the app to your workspace.
+1. Record the Slack signing secret and OAuth access token for configuration in later step.
 
 ### Storing encrypted app configuration
 
 App configuration should be stored to Google Storage using the encrypt feature of the tool locally.
 
-1. Define environment variables described [in setting up the local development](#environment-setup)
+* Define environment variables described [in setting up the local development](#environment-setup)
 
-2. Define settings for Slack integration
+* Define settings for Slack integration
 
 ```
   #.envrc
@@ -202,7 +194,7 @@ App configuration should be stored to Google Storage using the encrypt feature o
   export SLACK_NOTIFY_CHANNEL_ID=XXX
 ```
 
-2. Encrypt the first version to Google Storage
+* The app will pick up the configuration from environment variables and bundle them to a file. Encrypt the first version to Google Storage
 
 ```
   npm start init:config
@@ -231,6 +223,8 @@ gcloud functions deploy calcFlextime --region $GCLOUD_FUNCTION_REGION --format=n
 gcloud functions deploy calcStats --region $GCLOUD_FUNCTION_REGION --format=none --runtime=nodejs8 --trigger-topic stats
 gcloud functions deploy notifyUsers --region $GCLOUD_FUNCTION_REGION --format=none --runtime=nodejs8 --trigger-http
 ```
+
+When the deployment is done, copy the URL for initFlextime-function (from Google Cloud Console) and paste it to Slack slash command configuration. The format should be something like https://REGION-PROJECT_ID.cloudfunctions.net/initFlextime. Test out the command from Slack and see from Google Cloud Console logs what went wrong :)
 
 ### Trigger notifications
 
