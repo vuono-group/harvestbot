@@ -55,6 +55,7 @@ const initFlextime = async (req, res) => {
       const currentDate = new Date();
       const year = cmdParts.length > 1 ? cmdParts[1] : currentDate.getFullYear();
       const month = cmdParts.length > 2 ? cmdParts[2] : currentDate.getMonth() + 1;
+      logger.info('Enqueuing stats request');
       await (0, _queue.default)(config).enqueueStatsRequest({
         userId: req.body.user_id,
         responseUrl: req.body.response_url,
