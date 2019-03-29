@@ -48,8 +48,7 @@ const initFlextime = async (req, res) => {
       });
     }
 
-    _log.default.info(`Received valid Slack request with cmd ${cmd}`);
-
+    logger.info(`Received valid Slack request with cmd ${cmd}`);
     const cmdParts = cmd.split(' ');
 
     if (cmdParts.length > 0 && cmdParts[0] === 'stats') {
@@ -76,6 +75,7 @@ const initFlextime = async (req, res) => {
     });
   }
 
+  logger.warn('Received invalid Slack request');
   return res.status(401).send('Unauthorized');
 };
 
