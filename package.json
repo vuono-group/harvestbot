@@ -31,7 +31,7 @@
   "license": "MIT",
   "dependencies": {
     "@babel/runtime": "7.4.5",
-    "@google-cloud/datastore": "4.0.0",
+    "@google-cloud/datastore": "4.1.0",
     "@google-cloud/logging-winston": "0.11.1",
     "@google-cloud/pubsub": "0.29.1",
     "@google-cloud/storage": "2.5.0",
