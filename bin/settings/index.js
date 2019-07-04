@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
+var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread2"));
 
 var _log = _interopRequireDefault(require("../log"));
 
@@ -35,7 +35,7 @@ var _default = () => {
   const getConfig = async () => {
     const secretConfigString = await decryptSecret();
     const secretConfig = JSON.parse(secretConfigString);
-    return (0, _objectSpread2.default)({}, baseConfig, secretConfig, {
+    return (0, _objectSpread2.default)({}, baseConfig, {}, secretConfig, {
       emailDomains: secretConfig.emailDomains ? secretConfig.emailDomains.split(',') : [],
       hoursStatsColumnHeaders: secretConfig.hoursStatsColumnHeaders ? secretConfig.hoursStatsColumnHeaders.split(',') : _defaults.DEFAULT_HOURS_STATS_COLUMN_HEADERS,
       billableStatsColumnHeaders: secretConfig.billableStatsColumnHeaders ? secretConfig.billableStatsColumnHeaders.split(',') : _defaults.DEFAULT_BILLABLE_STATS_COLUMN_HEADERS,

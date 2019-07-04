@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
+var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread2"));
 
 var _winston = require("winston");
 

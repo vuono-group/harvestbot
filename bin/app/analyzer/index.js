@@ -9,7 +9,7 @@ exports.default = void 0;
 
 var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
 
-var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread"));
+var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread2"));
 
 var _calendar = _interopRequireDefault(require("../calendar"));
 
