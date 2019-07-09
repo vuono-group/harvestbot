@@ -9,9 +9,13 @@ exports.default = void 0;
 
 var _objectWithoutProperties2 = _interopRequireDefault(require("@babel/runtime/helpers/objectWithoutProperties"));
 
-var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread2"));
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
 var _calendar = _interopRequireDefault(require("../calendar"));
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { keys.push.apply(keys, Object.getOwnPropertySymbols(object)); } if (enumerableOnly) keys = keys.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 var _default = ({
   taskIds
@@ -55,7 +59,7 @@ var _default = ({
     const ignoreEntry = isPublicHoliday(entry.taskId) || isFlexLeave(entry.taskId);
     const ignoreFromTotal = !isWorkingDay || ignoreEntry;
     const isCurrenMonthEntry = !ignoreFromTotal && isCurrentMonth(entryDate);
-    return (0, _objectSpread2.default)({}, result, {
+    return _objectSpread({}, result, {
       warnings: !ignoreEntry && !isWorkingDay ? [...result.warnings, `Recorded hours in non-working day (${entry.date}) - ignoring!`] : result.warnings,
       total: ignoreFromTotal ? result.total : result.total + entry.hours,
       billable: isCurrenMonthEntry && entry.billable ? result.billable + entry.hours : result.billable,
@@ -116,7 +120,7 @@ var _default = ({
 
     if (dayInfo.isCalendarWorkingDay) {
       const projectNotAdded = dayInfo.isBillable && !result.projectNames.includes(entry.projectName);
-      return (0, _objectSpread2.default)({}, addDayStats(entry, result), {
+      return _objectSpread({}, addDayStats(entry, result), {
         hours: dayInfo.isWorkingOrSickDay ? result.hours + entry.hours : result.hours,
         billableHours: dayInfo.isBillable ? result.billableHours + entry.hours : result.billableHours,
         projectNames: projectNotAdded ? [...result.projectNames, entry.projectName] : result.projectNames
@@ -158,7 +162,7 @@ var _default = ({
   const flattenBillableUserEntries = entries => entries.reduce((result, {
     user,
     entries: userEntries
-  }) => [...result, ...userEntries.reduce((entryResult, entry) => getDayInfo(entry).isBillable ? [...entryResult, (0, _objectSpread2.default)({}, entry, {
+  }) => [...result, ...userEntries.reduce((entryResult, entry) => getDayInfo(entry).isBillable ? [...entryResult, _objectSpread({}, entry, {
     userId: user.id,
     firstName: user.first_name,
     lastName: user.last_name
@@ -181,11 +185,11 @@ var _default = ({
       users: {}
     };
     const user = task.users[userId];
-    return (0, _objectSpread2.default)({}, projects, {
-      [projectId]: (0, _objectSpread2.default)({}, project, {
+    return _objectSpread({}, projects, {
+      [projectId]: _objectSpread({}, project, {
         name: projectName,
-        tasks: (0, _objectSpread2.default)({}, project.tasks, {
-          [taskId]: (0, _objectSpread2.default)({}, task, {
+        tasks: _objectSpread({}, project.tasks, {
+          [taskId]: _objectSpread({}, task, {
             rate: (taskRates.find(({
               project: {
                 id: pId
@@ -195,7 +199,7 @@ var _default = ({
               }
             }) => pId === projectId && tId === taskId) || {}).hourly_rate,
             name: taskName,
-            users: (0, _objectSpread2.default)({}, task.users, {
+            users: _objectSpread({}, task.users, {
               [userId]: {
                 hours: user ? user.hours + hours : hours,
                 firstName,
@@ -299,7 +303,7 @@ var _default = ({
         billableHours
       } = _ref,
           item = (0, _objectWithoutProperties2.default)(_ref, ["projectTotal", "billableTotal", "taskTotal", "total", "hours", "taskHours", "projectHours", "billableHours"]);
-      return (0, _objectSpread2.default)({}, item, {
+      return _objectSpread({}, item, {
         hours: hours || taskHours || projectHours || billableHours,
         total: total || taskTotal || projectTotal || billableTotal
       });

@@ -7,13 +7,17 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _objectSpread2 = _interopRequireDefault(require("@babel/runtime/helpers/objectSpread2"));
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
 
 var _log = _interopRequireDefault(require("../log"));
 
 var _defaults = require("./defaults");
 
 var _keyRing = _interopRequireDefault(require("../cloud/key-ring"));
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { keys.push.apply(keys, Object.getOwnPropertySymbols(object)); } if (enumerableOnly) keys = keys.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(source, true).forEach(function (key) { (0, _defineProperty2.default)(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(source).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
 
 var _default = () => {
   const inGoogleCloud = process.env.FUNCTION_NAME;
@@ -35,7 +39,7 @@ var _default = () => {
   const getConfig = async () => {
     const secretConfigString = await decryptSecret();
     const secretConfig = JSON.parse(secretConfigString);
-    return (0, _objectSpread2.default)({}, baseConfig, {}, secretConfig, {
+    return _objectSpread({}, baseConfig, {}, secretConfig, {
       emailDomains: secretConfig.emailDomains ? secretConfig.emailDomains.split(',') : [],
       hoursStatsColumnHeaders: secretConfig.hoursStatsColumnHeaders ? secretConfig.hoursStatsColumnHeaders.split(',') : _defaults.DEFAULT_HOURS_STATS_COLUMN_HEADERS,
       billableStatsColumnHeaders: secretConfig.billableStatsColumnHeaders ? secretConfig.billableStatsColumnHeaders.split(',') : _defaults.DEFAULT_BILLABLE_STATS_COLUMN_HEADERS,
