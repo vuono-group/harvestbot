@@ -50,7 +50,7 @@
     "@babel/preset-env": "7.5.5",
     "babel-core": "7.0.0-bridge.0",
     "circleci-automerge": "1.1.0",
-    "commander": "3.0.1",
+    "commander": "3.0.2",
     "config": "3.2.2",
     "eslint": "5.15.3",
     "eslint-config-airbnb-base": "13.2.0",
