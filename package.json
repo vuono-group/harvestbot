@@ -37,7 +37,7 @@
     "@google-cloud/storage": "2.5.0",
     "@sendgrid/mail": "6.5.0",
     "axios": "0.19.1",
-    "googleapis": "46.0.0",
+    "googleapis": "47.0.0",
     "rxjs": "6.4.0",
     "winston": "3.2.1",
     "xlsx": "0.15.4"
