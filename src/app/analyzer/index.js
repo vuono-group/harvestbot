@@ -46,16 +46,13 @@ export default ({ taskIds }) => {
     entries,
     filtered = entries.reduce((result, entry) => {
       const entryDate = new Date(entry.date);
-      const isWorkingDay = calendar.isWorkingDay(entryDate);
-      const ignoreEntry = isPublicHoliday(entry.taskId) || isFlexLeave(entry.taskId);
-      const ignoreFromTotal = !isWorkingDay || ignoreEntry;
+      const ignoredTask = isPublicHoliday(entry.taskId) || isFlexLeave(entry.taskId);
+      const ignoreFromTotal = ignoredTask;
       const isCurrenMonthEntry = !ignoreFromTotal && isCurrentMonth(entryDate);
 
       return {
         ...result,
-        warnings: !ignoreEntry && !isWorkingDay
-          ? [...result.warnings, `Recorded hours in non-working day (${entry.date}) - ignoring!`] : result.warnings,
-        total: ignoreFromTotal ? result.total : result.total + entry.hours,
+        total: ignoredTask ? result.total : result.total + entry.hours,
         billable: isCurrenMonthEntry && entry.billable
           ? result.billable + entry.hours
           : result.billable,
@@ -112,8 +109,8 @@ export default ({ taskIds }) => {
     isWorkingOrSickDay = !isHolidayOrFlex(entry.taskId),
   ) => ({
     isCalendarWorkingDay,
-    isWorkingOrSickDay: isCalendarWorkingDay && isWorkingOrSickDay,
-    isBillable: isCalendarWorkingDay && isWorkingOrSickDay && entry.billable,
+    isWorkingOrSickDay,
+    isBillable: isWorkingOrSickDay && entry.billable,
   });
 
   const getHoursStats = (
@@ -122,23 +119,21 @@ export default ({ taskIds }) => {
     recordedHours = entries.reduce(
       (result, entry) => {
         const dayInfo = getDayInfo(entry);
-        if (dayInfo.isCalendarWorkingDay) {
-          const projectNotAdded = dayInfo.isBillable
-            && !result.projectNames.includes(entry.projectName);
-          return {
-            ...addDayStats(entry, result),
-            hours: dayInfo.isWorkingOrSickDay
-              ? result.hours + entry.hours
-              : result.hours,
-            billableHours: dayInfo.isBillable
-              ? result.billableHours + entry.hours
-              : result.billableHours,
-            projectNames: projectNotAdded
-              ? [...result.projectNames, entry.projectName]
-              : result.projectNames,
-          };
-        }
-        return result;
+
+        const projectNotAdded = dayInfo.isBillable
+          && !result.projectNames.includes(entry.projectName);
+        return {
+          ...(dayInfo.isCalendarWorkingDay ? addDayStats(entry, result) : result),
+          hours: dayInfo.isWorkingOrSickDay
+            ? result.hours + entry.hours
+            : result.hours,
+          billableHours: dayInfo.isBillable
+            ? result.billableHours + entry.hours
+            : result.billableHours,
+          projectNames: projectNotAdded
+            ? [...result.projectNames, entry.projectName]
+            : result.projectNames,
+        };
       },
       {
         dates: [],
