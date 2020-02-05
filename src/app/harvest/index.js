@@ -16,7 +16,7 @@ export default (config, http) => {
     },
   );
 
-  const getRangeQueryString = year => `&from=${year}-01-01&to=${year}-12-31`;
+  const getRangeQueryString = (year) => `&from=${year}-01-01&to=${year}-12-31`;
 
   const collect = (result, item) => [...result, item];
 
@@ -41,13 +41,13 @@ export default (config, http) => {
       map(({ next_page: nextPage, time_entries: entries }) => ({ entries, nextPage })),
     );
 
-  const getUsersForPage = page => api
+  const getUsersForPage = (page) => api
     .getJson(`/users?page=${page}`)
     .pipe(
       map(({ users, next_page: nextPage }) => ({ users, nextPage })),
     );
 
-  const getTaskAssignmentsForPage = page => api
+  const getTaskAssignmentsForPage = (page) => api
     .getJson(`/task_assignments?page=${page}`)
     .pipe(
       map(({ task_assignments: tasks, next_page: nextPage }) => ({ tasks, nextPage })),

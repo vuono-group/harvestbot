@@ -9,10 +9,10 @@ export default (config) => {
     projectId: config.projectId,
   });
 
-  const enqueueFlexTimeRequest = data => pubsubClient
+  const enqueueFlexTimeRequest = (data) => pubsubClient
     .topic(topics.flextime).publish(Buffer.from(JSON.stringify(data)));
 
-  const enqueueStatsRequest = data => pubsubClient
+  const enqueueStatsRequest = (data) => pubsubClient
     .topic(topics.stats).publish(Buffer.from(JSON.stringify(data)));
 
   return { enqueueFlexTimeRequest, enqueueStatsRequest };

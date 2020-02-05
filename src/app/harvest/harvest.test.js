@@ -15,7 +15,7 @@ describe('Harvest', () => {
   };
   const mockConfig = {};
   const mockHttp = () => ({
-    getJson: params => of((params.includes('/users') ? mockUsers : mockEntries)),
+    getJson: (params) => of((params.includes('/users') ? mockUsers : mockEntries)),
   });
   const { getTimeEntriesForEmail, getUsers } = harvest(mockConfig, mockHttp);
 
@@ -42,7 +42,7 @@ describe('Harvest', () => {
       expect.assertions(1);
       getUsers()
         .then(
-          res => expect(res).toEqual(mockUsers.users),
+          (res) => expect(res).toEqual(mockUsers.users),
         );
     });
   });

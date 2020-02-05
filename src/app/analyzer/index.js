@@ -4,16 +4,16 @@ export default ({ taskIds }) => {
   const calendar = cal();
   const sortByDate = (a, b) => new Date(a.date) - new Date(b.date);
 
-  const isPublicHoliday = taskId => taskId === taskIds.publicHoliday;
-  const isVacation = taskId => taskId === taskIds.vacation;
-  const isUnpaidLeave = taskId => taskId === taskIds.unpaidLeave;
-  const isFlexLeave = taskId => taskId === taskIds.flexLeave;
-  const isSickLeave = taskId => taskId === taskIds.sickLeave;
-  const isHoliday = taskId => isPublicHoliday(taskId)
+  const isPublicHoliday = (taskId) => taskId === taskIds.publicHoliday;
+  const isVacation = (taskId) => taskId === taskIds.vacation;
+  const isUnpaidLeave = (taskId) => taskId === taskIds.unpaidLeave;
+  const isFlexLeave = (taskId) => taskId === taskIds.flexLeave;
+  const isSickLeave = (taskId) => taskId === taskIds.sickLeave;
+  const isHoliday = (taskId) => isPublicHoliday(taskId)
     || isVacation(taskId)
     || isUnpaidLeave(taskId);
-  const isHolidayOrFlex = taskId => isHoliday(taskId) || isFlexLeave(taskId);
-  const isAbsence = taskId => isHolidayOrFlex(taskId) || isSickLeave(taskId);
+  const isHolidayOrFlex = (taskId) => isHoliday(taskId) || isFlexLeave(taskId);
+  const isAbsence = (taskId) => isHolidayOrFlex(taskId) || isSickLeave(taskId);
 
   const getPeriodRangeEnd = (entriesDate, latestFullDate, today = new Date()) => (
     calendar.datesEqual(entriesDate, today)
@@ -31,7 +31,7 @@ export default ({ taskIds }) => {
       latestFullDate,
     ),
     sortedRangeEntries = sortedEntries.filter(
-      entry => new Date(entry.date).getTime() <= endDate.getTime(),
+      (entry) => new Date(entry.date).getTime() <= endDate.getTime(),
     ),
   ) => ({
     entries: sortedRangeEntries, // sorted entries for range
@@ -39,7 +39,7 @@ export default ({ taskIds }) => {
     end: endDate, // today or last calendar working day
   });
 
-  const isCurrentMonth = date => date.getFullYear() === calendar.CURRENT_YEAR
+  const isCurrentMonth = (date) => date.getFullYear() === calendar.CURRENT_YEAR
     && date.getMonth() === calendar.CURRENT_MONTH;
 
   const calculateWorkedHours = (
@@ -169,7 +169,7 @@ export default ({ taskIds }) => {
     missingDays: recordedHours.dates.length - fullCalendarDays,
   });
 
-  const flattenBillableUserEntries = entries => entries.reduce(
+  const flattenBillableUserEntries = (entries) => entries.reduce(
     (result, { user, entries: userEntries }) => ([
       ...result,
       ...userEntries.reduce(
@@ -242,7 +242,7 @@ export default ({ taskIds }) => {
       ];
     }, []);
 
-  const addBillableTaskRows = tasks => Object
+  const addBillableTaskRows = (tasks) => Object
     .keys(tasks)
     .reduce((result, taskKey) => {
       const { name: taskName, rate: taskRate, users } = tasks[taskKey];
@@ -268,7 +268,7 @@ export default ({ taskIds }) => {
       ];
     }, []);
 
-  const convertBillableProjectRows = projects => Object.keys(projects).reduce((result, item) => {
+  const convertBillableProjectRows = (projects) => Object.keys(projects).reduce((result, item) => {
     const project = projects[item];
     const taskRows = addBillableTaskRows(project.tasks);
     const sumData = taskRows

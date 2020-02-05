@@ -9,7 +9,7 @@ export default (config, http, responseUrl) => {
     },
   );
 
-  const getUserEmailForId = userId => api
+  const getUserEmailForId = (userId) => api
     .getJson(`/users.info?user=${userId}&token=${config.slackBotToken}`)
     .pipe(
       filter(({

@@ -74,4 +74,4 @@ const publicHolidays = [
   '2020-12-26',
 ];
 
-export default publicHolidays.map(date => new Date(date));
+export default publicHolidays.map((date) => new Date(date));

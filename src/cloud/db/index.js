@@ -15,7 +15,7 @@ export default (config) => {
   });
 
   const fetchUsers = new Promise(
-    resolve => datastore.runQuery(datastore.createQuery(userKind)).then(res => resolve(res[0])),
+    (resolve) => datastore.runQuery(datastore.createQuery(userKind)).then((res) => resolve(res[0])),
   );
 
   return { storeUserData, fetchUsers };

@@ -13,7 +13,7 @@ describe('Slack', () => {
     it('should get user email', () => {
       expect.assertions(1);
       getUserEmailForId('userID')
-        .then(res => expect(res).toEqual('email'));
+        .then((res) => expect(res).toEqual('email'));
     });
   });
 });

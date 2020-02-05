@@ -7,16 +7,16 @@ export default () => {
   const CURRENT_MONTH = CURRENT_DATE.getMonth();
   const CURRENT_YEAR = CURRENT_DATE.getFullYear();
 
-  const isWeekLeave = date => date.getDay() === 0 || date.getDay() === 6;
+  const isWeekLeave = (date) => date.getDay() === 0 || date.getDay() === 6;
 
   const datesEqual = (a, b) => a.getDate() === b.getDate()
     && a.getMonth() === b.getMonth()
     && a.getFullYear() === b.getFullYear();
 
-  const isWorkingDay = date => !isWeekLeave(date)
-    && !publicHolidays.find(holiday => datesEqual(holiday, date));
+  const isWorkingDay = (date) => !isWeekLeave(date)
+    && !publicHolidays.find((holiday) => datesEqual(holiday, date));
 
-  const getYesterday = date => new Date(date.setDate(date.getDate() - 1));
+  const getYesterday = (date) => new Date(date.setDate(date.getDate() - 1));
 
   const getTotalWorkHoursSinceDate = (fromDate, toDate) => {
     let workingDate = new Date(toDate);

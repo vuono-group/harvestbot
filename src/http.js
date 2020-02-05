@@ -7,7 +7,7 @@ export default (baseURL, headers = {}) => {
     headers,
   });
 
-  const createObservable = request => new Observable(subscriber => request
+  const createObservable = (request) => new Observable((subscriber) => request
     .then((response) => {
       subscriber.next(response.data);
       subscriber.complete();
@@ -16,7 +16,7 @@ export default (baseURL, headers = {}) => {
       subscriber.complete();
     }));
 
-  const getJson = url => createObservable(api.get(url));
+  const getJson = (url) => createObservable(api.get(url));
 
   const postJson = (url, payload) => createObservable(api.post(url, payload));
 

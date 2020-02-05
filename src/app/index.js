@@ -11,7 +11,7 @@ import emailer from './emailer';
 
 export default (config, http) => {
   const logger = log(config);
-  const formatDate = date => date.toLocaleDateString(
+  const formatDate = (date) => date.toLocaleDateString(
     'en-US',
     {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
@@ -22,7 +22,7 @@ export default (config, http) => {
   const analyzer = analyze(config);
   const calendar = cal();
   const tracker = harvest(config, http);
-  const round = val => Math.floor(val * 2) / 2;
+  const round = (val) => Math.floor(val * 2) / 2;
 
   const calcFlextime = async (email) => {
     const userName = validateEmail(email);
@@ -92,7 +92,7 @@ export default (config, http) => {
     const workDaysInMonth = calendar.getWorkingDaysForMonth(year, month);
     return [
       { name: 'CALENDAR DAYS', days: workDaysInMonth },
-      ...entries.map(userData => analyzer.getHoursStats(userData, workDaysInMonth)),
+      ...entries.map((userData) => analyzer.getHoursStats(userData, workDaysInMonth)),
     ];
   };
 
@@ -115,7 +115,7 @@ export default (config, http) => {
 
     const users = await tracker.getUsers();
     const authorisedUser = users.find(
-      user => user.is_admin && validateEmail(user.email) === userName,
+      (user) => user.is_admin && validateEmail(user.email) === userName,
     );
     if (!authorisedUser) {
       return `Unable to authorise harvest user ${email}`;

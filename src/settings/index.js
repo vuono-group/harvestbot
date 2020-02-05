@@ -8,7 +8,7 @@ import decrypter from '../cloud/key-ring';
 export default () => {
   const inGoogleCloud = process.env.FUNCTION_NAME;
   const logger = log({ inGoogleCloud });
-  const getEnvParam = param => (process.env[param]
+  const getEnvParam = (param) => (process.env[param]
     ? process.env[param]
     : logger.error(`Environment variable ${param} missing.`));
   const baseConfig = {

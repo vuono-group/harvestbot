@@ -16,7 +16,7 @@ export default (config, http) => {
   const printResponse = (header, msgs) => {
     logger.info(header);
     if (msgs) {
-      msgs.forEach(msg => logger.info(msg));
+      msgs.forEach((msg) => logger.info(msg));
     }
   };
 
