@@ -34,7 +34,7 @@
     "@google-cloud/datastore": "5.0.6",
     "@google-cloud/logging-winston": "3.0.6",
     "@google-cloud/pubsub": "1.5.0",
-    "@google-cloud/storage": "4.3.1",
+    "@google-cloud/storage": "4.3.2",
     "@sendgrid/mail": "6.5.3",
     "axios": "0.19.2",
     "googleapis": "47.0.0",
