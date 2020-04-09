@@ -33,7 +33,7 @@
     "@babel/runtime": "7.9.2",
     "@google-cloud/datastore": "5.1.0",
     "@google-cloud/logging-winston": "3.0.6",
-    "@google-cloud/pubsub": "1.7.1",
+    "@google-cloud/pubsub": "1.7.2",
     "@google-cloud/storage": "4.7.0",
     "@sendgrid/mail": "7.0.0",
     "axios": "0.19.2",
