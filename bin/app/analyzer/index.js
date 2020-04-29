@@ -58,7 +58,7 @@ var _default = ({
     const ignoredTask = isPublicHoliday(entry.taskId) || isFlexLeave(entry.taskId);
     const ignoreFromTotal = ignoredTask;
     const isCurrenMonthEntry = !ignoreFromTotal && isCurrentMonth(entryDate);
-    return _objectSpread({}, result, {
+    return _objectSpread(_objectSpread({}, result), {}, {
       total: ignoredTask ? result.total : result.total + entry.hours,
       billable: isCurrenMonthEntry && entry.billable ? result.billable + entry.hours : result.billable,
       nonBillable: isCurrenMonthEntry && !entry.billable ? result.nonBillable + entry.hours : result.nonBillable
@@ -116,7 +116,7 @@ var _default = ({
   }, fullCalendarDays, recordedHours = entries.reduce((result, entry) => {
     const dayInfo = getDayInfo(entry);
     const projectNotAdded = dayInfo.isBillable && !result.projectNames.includes(entry.projectName);
-    return _objectSpread({}, dayInfo.isCalendarWorkingDay ? addDayStats(entry, result) : result, {
+    return _objectSpread(_objectSpread({}, dayInfo.isCalendarWorkingDay ? addDayStats(entry, result) : result), {}, {
       hours: dayInfo.isWorkingOrSickDay ? result.hours + entry.hours : result.hours,
       billableHours: dayInfo.isBillable ? result.billableHours + entry.hours : result.billableHours,
       projectNames: projectNotAdded ? [...result.projectNames, entry.projectName] : result.projectNames
@@ -155,7 +155,7 @@ var _default = ({
   const flattenBillableUserEntries = entries => entries.reduce((result, {
     user,
     entries: userEntries
-  }) => [...result, ...userEntries.reduce((entryResult, entry) => getDayInfo(entry).isBillable ? [...entryResult, _objectSpread({}, entry, {
+  }) => [...result, ...userEntries.reduce((entryResult, entry) => getDayInfo(entry).isBillable ? [...entryResult, _objectSpread(_objectSpread({}, entry), {}, {
     userId: user.id,
     firstName: user.first_name,
     lastName: user.last_name
@@ -178,11 +178,11 @@ var _default = ({
       users: {}
     };
     const user = task.users[userId];
-    return _objectSpread({}, projects, {
-      [projectId]: _objectSpread({}, project, {
+    return _objectSpread(_objectSpread({}, projects), {}, {
+      [projectId]: _objectSpread(_objectSpread({}, project), {}, {
         name: projectName,
-        tasks: _objectSpread({}, project.tasks, {
-          [taskId]: _objectSpread({}, task, {
+        tasks: _objectSpread(_objectSpread({}, project.tasks), {}, {
+          [taskId]: _objectSpread(_objectSpread({}, task), {}, {
             rate: (taskRates.find(({
               project: {
                 id: pId
@@ -192,7 +192,7 @@ var _default = ({
               }
             }) => pId === projectId && tId === taskId) || {}).hourly_rate,
             name: taskName,
-            users: _objectSpread({}, task.users, {
+            users: _objectSpread(_objectSpread({}, task.users), {}, {
               [userId]: {
                 hours: user ? user.hours + hours : hours,
                 firstName,
@@ -296,7 +296,7 @@ var _default = ({
         billableHours
       } = _ref,
           item = (0, _objectWithoutProperties2.default)(_ref, ["projectTotal", "billableTotal", "taskTotal", "total", "hours", "taskHours", "projectHours", "billableHours"]);
-      return _objectSpread({}, item, {
+      return _objectSpread(_objectSpread({}, item), {}, {
         hours: hours || taskHours || projectHours || billableHours,
         total: total || taskTotal || projectTotal || billableTotal
       });

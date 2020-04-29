@@ -39,7 +39,7 @@ var _default = () => {
   const getConfig = async () => {
     const secretConfigString = await decryptSecret();
     const secretConfig = JSON.parse(secretConfigString);
-    return _objectSpread({}, baseConfig, {}, secretConfig, {
+    return _objectSpread(_objectSpread(_objectSpread({}, baseConfig), secretConfig), {}, {
       emailDomains: secretConfig.emailDomains ? secretConfig.emailDomains.split(',') : [],
       hoursStatsColumnHeaders: secretConfig.hoursStatsColumnHeaders ? secretConfig.hoursStatsColumnHeaders.split(',') : _defaults.DEFAULT_HOURS_STATS_COLUMN_HEADERS,
       billableStatsColumnHeaders: secretConfig.billableStatsColumnHeaders ? secretConfig.billableStatsColumnHeaders.split(',') : _defaults.DEFAULT_BILLABLE_STATS_COLUMN_HEADERS,

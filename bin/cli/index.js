@@ -56,7 +56,7 @@ var _default = (config, http) => {
   };
 
   const decryptConfiguration = async () => {
-    const conf = JSON.parse((await decryptSecret()));
+    const conf = JSON.parse(await decryptSecret());
     /* eslint-disable no-console */
 
     console.log(`export ALLOWED_EMAIL_DOMAINS=${conf.emailDomains}`);

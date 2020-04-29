@@ -30,9 +30,9 @@ var _default = ({
     default: [...(inGoogleCloud ? [new _loggingWinston.LoggingWinston()] : []), new Console()]
   };
 
-  const loggingConfig = _objectSpread({}, inGoogleCloud ? {} : {
+  const loggingConfig = _objectSpread(_objectSpread({}, inGoogleCloud ? {} : {
     format: _winston.format.combine(_winston.format.colorize(), _winston.format.timestamp(), _winston.format.printf(info => `[${info.timestamp}] ${info.level}: ${info.message}`))
-  }, {
+  }), {}, {
     level: 'info',
     transports: appTransports.default,
     exceptionHandlers: exceptionHandlers.default,
