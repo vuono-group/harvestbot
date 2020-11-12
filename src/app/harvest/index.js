@@ -1,4 +1,4 @@
-import { empty } from 'rxjs';
+import { EMPTY } from 'rxjs';
 import {
   expand,
   first,
@@ -30,7 +30,7 @@ export default (config, http) => {
     .toPromise();
 
   const nextOrEmpty = (get, ...args) => ({ nextPage }) => (
-    nextPage ? get(...args, nextPage) : empty()
+    nextPage ? get(...args, nextPage) : EMPTY
   );
 
   const getTimeEntriesForPage = (userId, year, page) => api
