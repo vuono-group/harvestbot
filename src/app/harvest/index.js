@@ -6,6 +6,7 @@ import {
   mergeMap,
   reduce,
 } from 'rxjs/operators';
+import { DateTime } from 'luxon';
 
 export default (config, http) => {
   const api = http(
@@ -17,6 +18,7 @@ export default (config, http) => {
   );
 
   const getRangeQueryString = (year) => `&from=${year}-01-01&to=${year}-12-31`;
+  const getMonthlyRangeQueryString = (year, month) => `&from=${DateTime.local(year, month, 1).toISODate()}&to=${DateTime.local(year, month, 1).endOf('month').toISODate()}`;
 
   const collect = (result, item) => [...result, item];
 
@@ -40,6 +42,18 @@ export default (config, http) => {
     .pipe(
       map(({ next_page: nextPage, time_entries: entries }) => ({ entries, nextPage })),
     );
+
+  const getMonthlyTimeEntriesForPage = (year, month, page) => {
+    const url = `/time_entries?page=${page}${year
+      ? getMonthlyRangeQueryString(year, month)
+      : ''}`;
+
+    return api
+      .getJson(url)
+      .pipe(
+        map(({ next_page: nextPage, time_entries: entries }) => ({ entries, nextPage })),
+      );
+  };
 
   const getUsersForPage = (page) => api
     .getJson(`/users?page=${page}`)
@@ -66,6 +80,12 @@ export default (config, http) => {
       })),
     );
 
+  const getAllMonthlyTimeEntries = (year, month) => getMonthlyTimeEntriesForPage(year, month, 1)
+    .pipe(
+      expand(nextOrEmpty(getMonthlyTimeEntriesForPage, year, month)),
+      mergeMap(({ entries }) => entries),
+    );
+
   const getAllUsers = () => getUsersForPage(1)
     .pipe(
       expand(nextOrEmpty(getUsersForPage)),
@@ -83,6 +103,11 @@ export default (config, http) => {
     year,
   ) => getAllToPromise(getTimeEntriesForId, userId, year);
 
+  const getMonthlyTimeEntries = (
+    year,
+    month,
+  ) => getAllToPromise(getAllMonthlyTimeEntries, year, month);
+
   const getTimeEntriesForEmail = (userName, validateEmail = () => null) => getAllUsers()
     .pipe(
       first(({ email }) => userName === validateEmail(email)),
@@ -96,6 +121,10 @@ export default (config, http) => {
   const getTaskAssignments = () => getAllToPromise(getAllTaskAssignments);
 
   return {
-    getTimeEntriesForUserId, getTimeEntriesForEmail, getUsers, getTaskAssignments,
+    getTimeEntriesForUserId,
+    getMonthlyTimeEntries,
+    getTimeEntriesForEmail,
+    getUsers,
+    getTaskAssignments,
   };
 };
