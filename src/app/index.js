@@ -71,28 +71,36 @@ export default (config, http) => {
     const sortedUsers = users.sort(
       (a, b) => compare(a.first_name, b.first_name) || compare(a.last_name, b.last_name),
     );
-    // Find all users who have tracked hours this year to keep the rows consistent
-    const timeEntries = await Promise.all(
-      sortedUsers.map(({ id }) => tracker.getTimeEntriesForUserId(id, year)),
-    );
 
-    const isRequestedMonthEntry = ({ date }) => {
-      const entryDate = new Date(date);
-      return entryDate.getFullYear() === year && (entryDate.getMonth() + 1) === month;
-    };
-
+    const rawTimeEntries = await tracker.getMonthlyTimeEntries(year, month);
+    const timeEntries = sortedUsers.map(({ id }) => rawTimeEntries
+      .filter((entry) => entry.user.id === id)
+      .map(({
+        spent_date: date, hours, billable,
+        project: { id: projectId, name: projectName },
+        task: { id: taskId, name: taskName },
+      }) => ({
+        date, hours, billable, projectId, projectName, taskId, taskName,
+      })));
     const validEntries = timeEntries.reduce((result, entries, index) => (entries.length > 0
-      ? [...result, { user: sortedUsers[index], entries: entries.filter(isRequestedMonthEntry) }]
+      ? [...result, { user: sortedUsers[index], entries }]
       : result),
     []);
-    return validEntries;
+
+    const contractorIDs = sortedUsers.filter((user) => user.is_contractor).map((user) => user.id);
+    const ntcEntries = validEntries.filter((entry) => !contractorIDs.includes(entry.user.id));
+    const contractorEntries = validEntries.filter((entry) => contractorIDs.includes(entry.user.id));
+
+    return { ntcEntries, contractorEntries, allEntries: validEntries };
   };
 
-  const generateMonthlyHoursStats = async (entries, year, month) => {
+  const generateMonthlyHoursStats = async (ntcEntries, contractorEntries, year, month) => {
     const workDaysInMonth = calendar.getWorkingDaysForMonth(year, month);
     return [
       { name: 'CALENDAR DAYS', days: workDaysInMonth },
-      ...entries.map((userData) => analyzer.getHoursStats(userData, workDaysInMonth)),
+      ...ntcEntries.map((userData) => analyzer.getHoursStats(userData, workDaysInMonth)),
+      {},
+      ...contractorEntries.map((userData) => analyzer.getHoursStats(userData, workDaysInMonth)),
     ];
   };
 
@@ -121,9 +129,18 @@ export default (config, http) => {
       return `Unable to authorise harvest user ${email}`;
     }
 
-    const validEntries = await getMonthlyEntries(users, year, month);
-    const monthlyHoursRows = await generateMonthlyHoursStats(validEntries, year, month);
-    const monthlyBillingRows = await generateMonthlyBillingStats(validEntries);
+    const { ntcEntries, contractorEntries, allEntries } = await getMonthlyEntries(
+      users,
+      year,
+      month,
+    );
+    const monthlyHoursRows = await generateMonthlyHoursStats(
+      ntcEntries,
+      contractorEntries,
+      year,
+      month,
+    );
+    const monthlyBillingRows = await generateMonthlyBillingStats(allEntries);
 
     const fileName = `${year}-${month}-hours-${new Date().getTime()}.xlsx`;
     const filePath = `${tmpdir()}/${fileName}`;
