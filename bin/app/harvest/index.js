@@ -9,6 +9,8 @@ var _rxjs = require("rxjs");
 
 var _operators = require("rxjs/operators");
 
+var _luxon = require("luxon");
+
 var _default = (config, http) => {
   const api = http('https://api.harvestapp.com/v2/', {
     Authorization: `Bearer ${config.harvestAccessToken}`,
@@ -17,13 +19,15 @@ var _default = (config, http) => {
 
   const getRangeQueryString = year => `&from=${year}-01-01&to=${year}-12-31`;
 
+  const getMonthlyRangeQueryString = (year, month) => `&from=${_luxon.DateTime.local(year, month, 1).toISODate()}&to=${_luxon.DateTime.local(year, month, 1).endOf('month').toISODate()}`;
+
   const collect = (result, item) => [...result, item];
 
   const getAllToPromise = (getAll, ...args) => getAll(...args).pipe((0, _operators.reduce)(collect, [])).toPromise();
 
   const nextOrEmpty = (get, ...args) => ({
     nextPage
-  }) => nextPage ? get(...args, nextPage) : (0, _rxjs.empty)();
+  }) => nextPage ? get(...args, nextPage) : _rxjs.EMPTY;
 
   const getTimeEntriesForPage = (userId, year, page) => api.getJson(`/time_entries?user_id=${userId}&page=${page}${year ? getRangeQueryString(year) : ''}`).pipe((0, _operators.map)(({
     next_page: nextPage,
@@ -32,6 +36,17 @@ var _default = (config, http) => {
     entries,
     nextPage
   })));
+
+  const getMonthlyTimeEntriesForPage = (year, month, page) => {
+    const url = `/time_entries?page=${page}${year ? getMonthlyRangeQueryString(year, month) : ''}`;
+    return api.getJson(url).pipe((0, _operators.map)(({
+      next_page: nextPage,
+      time_entries: entries
+    }) => ({
+      entries,
+      nextPage
+    })));
+  };
 
   const getUsersForPage = page => api.getJson(`/users?page=${page}`).pipe((0, _operators.map)(({
     users,
@@ -73,6 +88,10 @@ var _default = (config, http) => {
     taskName
   })));
 
+  const getAllMonthlyTimeEntries = (year, month) => getMonthlyTimeEntriesForPage(year, month, 1).pipe((0, _operators.expand)(nextOrEmpty(getMonthlyTimeEntriesForPage, year, month)), (0, _operators.mergeMap)(({
+    entries
+  }) => entries));
+
   const getAllUsers = () => getUsersForPage(1).pipe((0, _operators.expand)(nextOrEmpty(getUsersForPage)), (0, _operators.mergeMap)(({
     users
   }) => users));
@@ -82,6 +101,8 @@ var _default = (config, http) => {
   }) => tasks));
 
   const getTimeEntriesForUserId = (userId, year) => getAllToPromise(getTimeEntriesForId, userId, year);
+
+  const getMonthlyTimeEntries = (year, month) => getAllToPromise(getAllMonthlyTimeEntries, year, month);
 
   const getTimeEntriesForEmail = (userName, validateEmail = () => null) => getAllUsers().pipe((0, _operators.first)(({
     email
@@ -95,6 +116,7 @@ var _default = (config, http) => {
 
   return {
     getTimeEntriesForUserId,
+    getMonthlyTimeEntries,
     getTimeEntriesForEmail,
     getUsers,
     getTaskAssignments
