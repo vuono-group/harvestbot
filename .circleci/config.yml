@@ -49,7 +49,7 @@ jobs:
           rm -rf bin/
           cp -R build/ bin/
           git add bin/
-          if git commit -a -m "[skip ci] Update deployable build output."; then
+          if git commit -a -m "[skip ci] Update deployable build output." --allow-empty; then
             git push origin dev
             # Trigger deployment with updated build output
             curl -u ${CIRCLE_API_PROJECT_TOKEN}: -d build_parameters[CIRCLE_JOB]=deploy_test https://circleci.com/api/v1.1/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/tree/$CIRCLE_BRANCH
