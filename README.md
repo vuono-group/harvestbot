@@ -163,6 +163,7 @@ export TF_VAR_gcloud_service_account_email=<gcloud_project_id>@appspot.gservicea
 * Initialize encryption related resources to Google Cloud using Terraform-tool:
 ```
 cd infra
+terraform init
 terraform apply
 ```
 
