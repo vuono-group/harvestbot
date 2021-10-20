@@ -41,7 +41,6 @@ var _default = (config, http, responseUrl) => {
     attachments: messages ? [{
       text: messages.join('\n')
     }] : [],
-    as_user: false,
     user: userId
   }).toPromise();
 
