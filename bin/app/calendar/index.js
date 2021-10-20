@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _publicHolidays = _interopRequireDefault(require("./public-holidays"));
+var _finnishHolidaysJs = _interopRequireDefault(require("finnish-holidays-js"));
 
 var _default = () => {
   const HOURS_IN_DAY = 7.5;
@@ -19,7 +19,9 @@ var _default = () => {
 
   const datesEqual = (a, b) => a.getDate() === b.getDate() && a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
 
-  const isWorkingDay = date => !isWeekLeave(date) && !_publicHolidays.default.find(holiday => datesEqual(holiday, date));
+  const isPublicHoliday = date => !!_finnishHolidaysJs.default.month(date.getMonth() + 1, date.getFullYear()).find(it => it.day === date.getDate());
+
+  const isWorkingDay = date => !isWeekLeave(date) && !isPublicHoliday(date);
 
   const getYesterday = date => new Date(date.setDate(date.getDate() - 1));
 

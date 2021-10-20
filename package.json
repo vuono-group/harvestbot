@@ -1,6 +1,6 @@
 {
   "name": "harvestbot",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "Chatbot for providing hours info from Harvest.",
   "main": "bin/index.js",
   "scripts": {
@@ -37,6 +37,7 @@
     "@google-cloud/storage": "5.0.1",
     "@sendgrid/mail": "7.1.1",
     "axios": "0.19.2",
+    "finnish-holidays-js": "^1.1.2",
     "googleapis": "52.0.0",
     "luxon": "^1.25.0",
     "rxjs": "6.5.4",

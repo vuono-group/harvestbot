@@ -1,4 +1,4 @@
-import publicHolidays from './public-holidays';
+import finnishholidays from 'finnish-holidays-js';
 
 export default () => {
   const HOURS_IN_DAY = 7.5;
@@ -13,10 +13,14 @@ export default () => {
     && a.getMonth() === b.getMonth()
     && a.getFullYear() === b.getFullYear();
 
+  const isPublicHoliday = (date) => !!finnishholidays.month(date.getMonth() + 1,
+    date.getFullYear()).find((it) => it.day === date.getDate());
+
   const isWorkingDay = (date) => !isWeekLeave(date)
-    && !publicHolidays.find((holiday) => datesEqual(holiday, date));
+    && !isPublicHoliday(date);
 
   const getYesterday = (date) => new Date(date.setDate(date.getDate() - 1));
+
 
   const getTotalWorkHoursSinceDate = (fromDate, toDate) => {
     let workingDate = new Date(toDate);
