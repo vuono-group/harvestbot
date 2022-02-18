@@ -19,7 +19,7 @@ var _default = config => {
     const excelFile = (0, _fs.readFileSync)(filePath);
     const msg = {
       to: email,
-      from: `noreply@${config.emailDomains[0]}`,
+      from: `harvestbot@${config.emailDomains[0]}`,
       subject,
       text: message,
       attachments: [{

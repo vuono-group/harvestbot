@@ -115,30 +115,23 @@ const calcFlextime = async message => {
 
 exports.calcFlextime = calcFlextime;
 
-const notifyUsers = async (req, res) => {
+const notifyUsers = async () => {
   const config = await getAppConfig();
-
-  if ((0, _verifier.default)(config).verifySlackRequest(req)) {
-    const store = (0, _db.default)(config);
-    const msgQueue = (0, _queue.default)(config);
-    const users = await store.fetchUsers;
-    logger.info(`Found ${users.length} users`);
-    await Promise.all(users.map(async ({
-      email,
-      id
-    }) => {
-      logger.info(`Notify ${email}`);
-      return msgQueue.enqueueFlexTimeRequest({
-        userId: id,
-        email
-      });
-    }));
-    return res.json({
-      text: 'ok'
+  const store = (0, _db.default)(config);
+  const msgQueue = (0, _queue.default)(config);
+  const users = await store.fetchUsers;
+  logger.info(`Found ${users.length} users`);
+  await Promise.all(users.map(async ({
+    email,
+    id
+  }) => {
+    logger.info(`Notify ${email}`);
+    return msgQueue.enqueueFlexTimeRequest({
+      userId: id,
+      email
     });
-  }
-
-  return res.status(401).send('Unauthorized');
+  }));
+  return "OK";
 };
 
 exports.notifyUsers = notifyUsers;
