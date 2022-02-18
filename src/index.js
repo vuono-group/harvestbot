@@ -83,23 +83,20 @@ export const calcFlextime = async (message) => {
   return logger.error('Cannot find Slack user id');
 };
 
-export const notifyUsers = async (req, res) => {
+export const notifyUsers = async () => {
   const config = await getAppConfig();
-  if (verifier(config).verifySlackRequest(req)) {
-    const store = db(config);
-    const msgQueue = queue(config);
+  const store = db(config);
+  const msgQueue = queue(config);
 
-    const users = await store.fetchUsers;
-    logger.info(`Found ${users.length} users`);
+  const users = await store.fetchUsers;
+  logger.info(`Found ${users.length} users`);
 
-    await Promise.all(users.map(async ({ email, id }) => {
-      logger.info(`Notify ${email}`);
-      return msgQueue.enqueueFlexTimeRequest({ userId: id, email });
-    }));
-    return res.json({ text: 'ok' });
-  }
-  return res.status(401).send('Unauthorized');
-};
+  await Promise.all(users.map(async ({ email, id }) => {
+    logger.info(`Notify ${email}`);
+    return msgQueue.enqueueFlexTimeRequest({ userId: id, email });
+  }));
+  return "OK";
+}
 
 export const calcStats = async (message) => {
   const config = await getAppConfig();
