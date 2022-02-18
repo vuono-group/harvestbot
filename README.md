@@ -220,14 +220,19 @@ echo "Set project"
 gcloud --quiet config set project $GCLOUD_PROJECT
 
 echo "Deploy functions"
-gcloud functions deploy initFlextime --region $GCLOUD_FUNCTION_REGION --format=none --runtime=nodejs12 --trigger-http
-gcloud functions deploy calcFlextime --region $GCLOUD_FUNCTION_REGION --format=none --runtime=nodejs12 --trigger-topic flextime
-gcloud functions deploy calcStats --region $GCLOUD_FUNCTION_REGION --format=none --runtime=nodejs12 --trigger-topic stats
-gcloud functions deploy notifyUsers --region $GCLOUD_FUNCTION_REGION --format=none --runtime=nodejs12 --trigger-http
+gcloud functions deploy initFlextime --region $GCLOUD_FUNCTION_REGION --format=none --runtime=nodejs12 --trigger-http --update-env-vars GCLOUD_PROJECT=$GCLOUD_PROJECT,GCLOUD_FUNCTION_REGION=$GCLOUD_FUNCTION_REGION,FUNCTION_REGION=$FUNCTION_REGION
+gcloud functions deploy calcFlextime --region $GCLOUD_FUNCTION_REGION --format=none --runtime=nodejs12 --trigger-topic flextime --update-env-vars GCLOUD_PROJECT=$GCLOUD_PROJECT,GCLOUD_FUNCTION_REGION=$GCLOUD_FUNCTION_REGION,FUNCTION_REGION=$FUNCTION_REGION
+gcloud functions deploy calcStats --region $GCLOUD_FUNCTION_REGION --format=none --runtime=nodejs12 --trigger-topic stats --update-env-vars GCLOUD_PROJECT=$GCLOUD_PROJECT,GCLOUD_FUNCTION_REGION=$GCLOUD_FUNCTION_REGION,FUNCTION_REGION=$FUNCTION_REGION
+gcloud functions deploy notifyUsers --region $GCLOUD_FUNCTION_REGION --format=none --runtime=nodejs12 --trigger-topic notify --update-env-vars GCLOUD_PROJECT=$GCLOUD_PROJECT,GCLOUD_FUNCTION_REGION=$GCLOUD_FUNCTION_REGION,FUNCTION_REGION=$FUNCTION_REGION
 ```
 
 When the deployment is done, copy the URL for initFlextime-function (from Google Cloud Console) and paste it to Slack slash command configuration. The format should be something like https://REGION-PROJECT_ID.cloudfunctions.net/initFlextime. Test out the command from Slack and see from Google Cloud Console logs what went wrong :)
 
-### Trigger notifications
+### Triggering notifications
 
-Weekly flextime notifications can be triggered using through HTTP interface. See the CI configuration of this project for an example.
+Set up a Google Cloud Scheduler job that publishes to a topic `notify`. The body of the job is irrelevant.
+
+### TODO
+
+- [ ] Check CI setup 
+ - [ ] Remove uneccessary http scheduling for notifications
