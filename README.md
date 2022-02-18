@@ -235,4 +235,5 @@ Set up a Google Cloud Scheduler job that publishes to a topic `notify`. The body
 ### TODO
 
 - [ ] Check CI setup 
- - [ ] Remove uneccessary http scheduling for notifications
+   - [ ] Remove uneccessary http scheduling for notifications
+- [ ] Update Node version and dependencies
