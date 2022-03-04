@@ -6,6 +6,7 @@ build/
 .terraform/
 *.tfstate
 *.backup
+.log
 .idea
 .in
 google-application-credentials.json
